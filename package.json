@@ -1,0 +1,20 @@
+{
+  "name": "batch-llm-interview-challenge",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.21.1",
+    "nats": "^2.28.2"
+  },
+  "devDependencies": {
+    "tsx": "^4.19.2"
+  }
+}
