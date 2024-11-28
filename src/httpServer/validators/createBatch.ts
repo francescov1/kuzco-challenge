@@ -5,18 +5,24 @@ const messageValidator = z.object({
   role: z.enum(['system', 'user', 'assistant'])
 });
 
-const llmRequestValidator = z.object({
+export const llmRequestValidator = z.object({
   model: z.string(),
   messages: z.array(messageValidator)
 });
 
-export const createBatchValidator = z.object({
-  // TODO: name to diffrentiate from db schema
-  llmRequests: z.array(llmRequestValidator)
-});
-
 // TODO: better name
 export type LlmRequestValidated = z.infer<typeof llmRequestValidator>;
+
+export const parseJsonlBatchFile = (buffer: Buffer): LlmRequestValidated[] => {
+  const fileContent = buffer.toString('utf-8');
+  return fileContent
+    .split('\n')
+    .filter((line) => line.trim())
+    .map((line) => {
+      const parsed = JSON.parse(line);
+      return llmRequestValidator.parse(parsed);
+    });
+};
 
 // TODO: Move
 interface Message {

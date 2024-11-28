@@ -2,6 +2,8 @@ import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 import { Batch, LlmRequest } from './models';
 
+// TODO: ensure this follows conventions https://orm.drizzle.team/docs/get-started/postgresql-new
+
 export class DatabaseClient {
   public db: ReturnType<typeof drizzle>;
   private pool: Pool;

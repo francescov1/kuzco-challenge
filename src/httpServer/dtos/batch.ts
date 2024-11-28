@@ -9,13 +9,9 @@ export interface BatchDto {
   completionWebhookUrl: string | null;
   completedAt: Date | null;
   status: 'completed' | 'pending';
-  completedLlmRequests: CompletedLlmRequests[];
 }
 
-export const toBatchDto = (
-  batch: Batch,
-  completedLlmRequests: CompletedLlmRequests[]
-): BatchDto => {
+export const toBatchDto = (batch: Batch): BatchDto => {
   return {
     id: batch.id,
     totalShards: batch.totalShards,
@@ -23,7 +19,6 @@ export const toBatchDto = (
     createdAt: batch.createdAt,
     completionWebhookUrl: batch.completionWebhookUrl,
     completedAt: batch.completedAt,
-    status: batch.completedAt ? 'completed' : 'pending',
-    completedLlmRequests
+    status: batch.completedAt ? 'completed' : 'pending'
   };
 };

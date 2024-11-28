@@ -29,6 +29,7 @@ export interface ResultsMessage {
 }
 
 // TODOs in order:
+// - jsonl upload and download
 // - move all to docker repo
 // - better abstractions, clients, daos, etc
 // - setup easy startup scripts, everything init easily.
@@ -44,6 +45,7 @@ export interface ResultsMessage {
 // - more robust handling for entire batch failure
 // - retry individual llm calls (ie in processRequest)
 // - Graceful shutdown
+// - use file storage when uploading jsonl
 
 // Deduplication:
 // Exactly one (ackAck): https://docs.nats.io/using-nats/developer/develop_jetstream/model_deep_dive#exactly-once-semantics
