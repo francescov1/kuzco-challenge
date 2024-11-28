@@ -1,7 +1,7 @@
-import { LlmRequest } from './types';
+import { LlmRequestValidated } from './httpServer/validators/createBatch';
 import { TEST_ERROR_PROMPT } from './constants';
 // Example requests
-export const llmRequestExamples: LlmRequest[] = [
+export const llmRequestExamples: LlmRequestValidated[] = [
   {
     model: 'mistralai/mistral-nemo-12b-instruct/fp-8',
     messages: [

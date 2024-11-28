@@ -13,8 +13,8 @@ import { Batch } from './batch';
 
 export const statusEnum = pgEnum('status', [STATUS.SUCCESS, STATUS.ERROR]);
 
-export const Request = pgTable(
-  'requests',
+export const LlmRequest = pgTable(
+  'llm_requests',
   {
     id: serial('id').primaryKey(),
     batchId: integer('batch_id')
@@ -32,5 +32,5 @@ export const Request = pgTable(
   (table) => [index('batch_id_idx').on(table.batchId)]
 );
 
-export type Request = typeof Request.$inferSelect;
-export type NewRequest = typeof Request.$inferInsert;
+export type LlmRequest = typeof LlmRequest.$inferSelect;
+export type NewLlmRequest = typeof LlmRequest.$inferInsert;

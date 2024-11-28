@@ -1,19 +1,18 @@
 import { connect } from 'nats';
 import { jobToWorkerSubject, encodeJson } from './utils';
 import { NATS_SERVER_URL } from './constants';
-import { LlmRequest } from './types';
 import { llmRequestExamples } from './fixtures';
 import { SHARD_SIZE } from './constants';
-import { initDb, getDb } from './db';
+import { dbClient } from './db';
 import { Batch } from './db/models/batch';
+import { LlmRequestValidated } from './httpServer/validators/createBatch';
 
-async function publishMessages() {
-  await initDb();
+export const publishMessages = async (llmRequests: LlmRequestValidated[]): Promise<Batch> => {
   const connection = await connect({ servers: NATS_SERVER_URL });
   const jetstreamClient = connection.jetstream();
 
-  const llmRequestsByShard = llmRequestExamples.reduce(
-    (shards: Record<string, LlmRequest[]>, request: LlmRequest, index) => {
+  const llmRequestsByShard = llmRequests.reduce(
+    (shards: Record<string, LlmRequestValidated[]>, request: LlmRequestValidated, index) => {
       const shardId = `shard_${Math.floor(index / SHARD_SIZE)}`;
       if (!shards[shardId]) {
         shards[shardId] = [];
@@ -28,7 +27,7 @@ async function publishMessages() {
 
   // TODO: Create a dao,
   // TODO: Create a client for nats
-  const [newBatch] = await getDb()
+  const [newBatch] = await dbClient.db
     .insert(Batch)
     .values({
       totalShards,
@@ -47,8 +46,9 @@ async function publishMessages() {
   }
 
   await connection.close();
-}
+  return newBatch;
+};
 
-publishMessages().catch((err) => {
+publishMessages(llmRequestExamples).catch((err) => {
   console.error('Error publishing messages:', err);
 });

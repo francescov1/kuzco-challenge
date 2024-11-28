@@ -1,6 +1,5 @@
 import { AckPolicy, connect, DeliverPolicy } from 'nats';
 import { jobToResultsSubject, subjectToJob, encodeJson } from './utils';
-import { ResultsMessage, WorkerMessage } from './types';
 import {
   NATS_SERVER_URL,
   RESULTS_CONSUMER_NAME,
@@ -13,19 +12,29 @@ import {
   RESULTS_TIMEOUT_SECONDS,
   RESULTS_MAX_DELIVERIES
 } from './constants';
-import { initDb, closeDb, getDb } from './db';
-import { Request } from './db/models/request';
+import { dbClient } from './db';
+import { LlmRequest } from './db/models';
 import * as llmClient from './llmClient';
 import { eq } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { Batch } from './db/models/batch';
+import { CompletedLlmRequests, LlmRequestValidated } from './httpServer/validators/createBatch';
+
+export interface WorkerMessage {
+  llmRequests: LlmRequestValidated[];
+}
+
+export interface ResultsMessage {
+  completedLlmRequests: CompletedLlmRequests[];
+}
 
 // TODOs in order:
-// - get http server working, add route to fetch completed batches, return pending batch info too
+// - better abstractions, clients, daos, etc
 // - move all to docker repo
 // - setup easy startup scripts, everything init easily.
 // - Clever use of subjects
 // - add proper logger
+// - unit tests
 // - think about validation llm requests Cryptography
 
 // Docs
@@ -96,8 +105,8 @@ async function startWorker(workerId: string) {
       const data: WorkerMessage = message.json();
       console.log(`Worker ${workerId} processing ${message.subject}`);
 
-      const responses = await llmClient.processRequests(data.requests);
-      const resultData: ResultsMessage = { responses };
+      const completedLlmRequests = await llmClient.processRequests(data.llmRequests);
+      const resultData: ResultsMessage = { completedLlmRequests };
       await jetstreamClient.publish(
         jobToResultsSubject({ batchId, shardId }),
         encodeJson(resultData),
@@ -118,8 +127,6 @@ async function startWorker(workerId: string) {
 }
 
 async function startResultsWorker() {
-  await initDb();
-
   const connection = await connect({ servers: NATS_SERVER_URL });
   const jetstreamClient = connection.jetstream();
 
@@ -132,7 +139,7 @@ async function startResultsWorker() {
     const { batchId, shardId } = subjectToJob(message.subject);
     const data: ResultsMessage = message.json();
 
-    const requestInserts = data.responses.map((response) => ({
+    const requestInserts = data.completedLlmRequests.map((response) => ({
       batchId,
       shardId,
       messages: response.messages,
@@ -143,8 +150,8 @@ async function startResultsWorker() {
 
     // We can assume this will be set, since the following transaction will either set it successfully or throw an error.
     let updatedBatch!: Batch;
-    await getDb().transaction(async (tx) => {
-      await tx.insert(Request).values(requestInserts);
+    await dbClient.db.transaction(async (tx) => {
+      await tx.insert(LlmRequest).values(requestInserts);
 
       // Update batch completion
       const results = await tx
@@ -185,7 +192,7 @@ async function startResultsWorker() {
   }
 
   await connection.close();
-  await closeDb();
+  await dbClient.close();
 }
 
 async function main() {

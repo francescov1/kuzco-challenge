@@ -7,6 +7,7 @@
     "start": "tsx src/index.ts",
     "workers": "tsx watch src/workers.ts",
     "publish": "tsx src/publish.ts",
+    "server": "tsx src/httpServer.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate"
@@ -18,9 +19,11 @@
     "drizzle-orm": "^0.36.4",
     "express": "^4.21.1",
     "nats": "^2.28.2",
-    "pg": "^8.13.1"
+    "pg": "^8.13.1",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/express": "^5.0.0",
     "@types/pg": "^8.11.10",
     "drizzle-kit": "^0.28.1",
     "tsx": "^4.19.2"
