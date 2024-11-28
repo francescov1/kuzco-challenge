@@ -1,10 +1,10 @@
 import { serial, text, timestamp, index, jsonb, pgEnum, pgTable } from 'drizzle-orm/pg-core';
-import { STATUS } from '../constants';
+import { STATUS } from '../../constants';
 
 export const messageRoleEnum = pgEnum('message_role', ['system', 'user', 'assistant']);
 export const statusEnum = pgEnum('status', [STATUS.SUCCESS, STATUS.ERROR]);
 
-export const requests = pgTable(
+export const Request = pgTable(
   'requests',
   {
     id: serial('id').primaryKey(),
@@ -21,5 +21,5 @@ export const requests = pgTable(
   (table) => [index('batch_id_idx').on(table.batchId)]
 );
 
-export type Request = typeof requests.$inferSelect;
-export type NewRequest = typeof requests.$inferInsert;
+export type Request = typeof Request.$inferSelect;
+export type NewRequest = typeof Request.$inferInsert;
