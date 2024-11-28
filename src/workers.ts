@@ -6,18 +6,20 @@ import {
   RESULTS_CONSUMER_NAME,
   RESULTS_STREAM_NAME,
   WORKER_CONSUMER_NAME,
-  WORKER_STREAM_NAME
+  WORKER_STREAM_NAME,
+  STATUS
 } from './constants';
 import { db } from './db';
 import { requests } from './db/schema';
+import * as llmClient from './llmClient';
 
 // TODOs in order:
-// - Fix request and result types to reflect the actual data
 // - Get db working
 // - get http server working
 // - Clever use of subjects
 // - add webhook handling
 // - Graceful shutdown
+// - think about validation llm requests Cryptography
 
 // Deduplication:
 // Exactly one (ackAck): https://docs.nats.io/using-nats/developer/develop_jetstream/model_deep_dive#exactly-once-semantics
@@ -61,10 +63,6 @@ async function setupStreams() {
   }
 }
 
-const processRequests = async (requests: LlmRequest[]): Promise<LlmResponse[]> => {
-  return requests.map((request) => ({ ...request, response: 'success' }));
-};
-
 async function startWorker(workerId: string) {
   const connection = await connect({ servers: NATS_SERVER_URL });
   const jetstreamClient = connection.jetstream();
@@ -78,7 +76,7 @@ async function startWorker(workerId: string) {
     const data: WorkerMessage = message.json();
     console.log(`Worker ${workerId} processing ${message.subject}`);
 
-    const responses = await processRequests(data.requests);
+    const responses = await llmClient.processRequests(data.requests);
     const resultData: ResultsMessage = { responses };
     await jetstreamClient.publish(
       jobToResultsSubject({ batchId, shardId }),
@@ -105,27 +103,20 @@ async function startResultsWorker() {
     const { batchId, shardId } = subjectToJob(message.subject);
     const data: ResultsMessage = message.json();
 
-    // Insert each request/response pair separately
     const requestInserts = data.responses.map((response) => ({
       batchId,
       shardId,
-      prompt: response.prompt,
-      response: response.response,
+      messages: response.messages,
       model: response.model,
-      status: response.error ? 'error' : 'success',
-      error: response.error || null,
-      tokens: {
-        prompt_tokens: response.promptTokens,
-        completion_tokens: response.completionTokens,
-        total_tokens: response.totalTokens
-      },
-      latencyMs: response.latencyMs
+      status: response.error ? STATUS.ERROR : STATUS.SUCCESS,
+      error: response.error || null
     }));
 
-    // Use a transaction for atomic batch insert
-    await db.transaction(async (tx) => {
-      await tx.insert(requests).values(requestInserts);
-    });
+    console.log('Inserting requests into db: ', requestInserts);
+
+    // await db.transaction(async (tx) => {
+    //   await tx.insert(requests).values(requestInserts);
+    // });
 
     await message.ackAck();
   }

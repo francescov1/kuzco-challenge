@@ -1,24 +1,22 @@
 import { connect } from 'nats';
 import { jobToWorkerSubject, encodeJson } from './utils';
 import { NATS_SERVER_URL } from './constants';
-
-type LlmRequest = {};
-const SHARD_SIZE = 3;
-const llmRequests: LlmRequest[] = Array.from({ length: 10 }, () => ({}));
+import { LlmRequest } from './types';
+import { llmRequestExamples } from './fixtures';
+import { SHARD_SIZE } from './constants';
 
 async function publishMessages() {
-  const connection = await connect({ servers: NATS_SERVER_URL }); // Connect to NATS server
+  const connection = await connect({ servers: NATS_SERVER_URL });
   const jetstreamClient = connection.jetstream();
 
-  const batchId = 'batch_1'; // TODO: Generate a random batch id based on request
+  const batchId = `batch_${Date.now()}`; // Generate unique batch ID
 
-  const llmRequestsByShard = llmRequests.reduce(
+  const llmRequestsByShard = llmRequestExamples.reduce(
     (shards: Record<string, LlmRequest[]>, request: LlmRequest, index) => {
       const shardId = `shard_${Math.floor(index / SHARD_SIZE)}`;
       if (!shards[shardId]) {
         shards[shardId] = [];
       }
-
       shards[shardId].push(request);
       return shards;
     },

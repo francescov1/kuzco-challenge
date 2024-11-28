@@ -1,18 +1,23 @@
-// TODO: Rename
 export interface Job {
   batchId: string;
   shardId: string;
 }
 
+export interface Message {
+  content: string;
+  role: 'system' | 'user' | 'assistant';
+}
+
 export interface LlmRequest {
-  id: string;
-  prompt: string;
+  model: string;
+  messages: Message[];
 }
 
 export interface LlmResponse {
-  id: string;
-  prompt: string;
-  response: string;
+  model: string;
+  messages: Message[];
+  status: 'success' | 'error';
+  error?: string;
 }
 
 export interface WorkerMessage {

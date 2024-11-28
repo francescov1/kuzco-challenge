@@ -1,18 +1,25 @@
-import { pgTable, serial, text, timestamp, jsonb, varchar, integer } from 'drizzle-orm/pg-core';
+import { serial, text, timestamp, index, jsonb, pgEnum, pgTable } from 'drizzle-orm/pg-core';
+import { STATUS } from '../constants';
 
-export const requests = pgTable('requests', {
-  id: serial('id').primaryKey(),
-  batchId: text('batch_id').notNull(),
-  shardId: text('shard_id').notNull(),
-  prompt: text('prompt').notNull(),
-  response: text('response').notNull(),
-  model: varchar('model', { length: 50 }).notNull(),
-  status: varchar('status', { length: 20 }).notNull(), // 'success', 'error'
-  error: text('error'),
-  tokens: jsonb('token_usage').notNull(), // { prompt_tokens, completion_tokens, total_tokens }
-  latencyMs: integer('latency_ms').notNull(),
-  createdAt: timestamp('created_at').defaultNow().notNull()
-});
+export const messageRoleEnum = pgEnum('message_role', ['system', 'user', 'assistant']);
+export const statusEnum = pgEnum('status', [STATUS.SUCCESS, STATUS.ERROR]);
+
+export const requests = pgTable(
+  'requests',
+  {
+    id: serial('id').primaryKey(),
+    batchId: text('batch_id').notNull(),
+    shardId: text('shard_id').notNull(),
+    messages: jsonb('messages')
+      .$type<Array<{ content: string; role: (typeof messageRoleEnum.enumValues)[number] }>>()
+      .notNull(),
+    model: text('model').notNull(),
+    status: statusEnum('status').notNull(),
+    error: text('error'),
+    createdAt: timestamp('created_at').defaultNow().notNull()
+  },
+  (table) => [index('batch_id_idx').on(table.batchId)]
+);
 
 export type Request = typeof requests.$inferSelect;
 export type NewRequest = typeof requests.$inferInsert;
