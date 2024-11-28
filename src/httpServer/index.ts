@@ -10,8 +10,6 @@ import { getBatchParamsValidator } from './validators/getBatch';
 const app = express();
 app.use(express.json());
 
-// TODO: Create dtos and validators and converters
-
 // Route to publish messages
 app.post('/batches', async (req, res) => {
   try {

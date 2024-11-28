@@ -29,8 +29,8 @@ export interface ResultsMessage {
 }
 
 // TODOs in order:
-// - better abstractions, clients, daos, etc
 // - move all to docker repo
+// - better abstractions, clients, daos, etc
 // - setup easy startup scripts, everything init easily.
 // - Clever use of subjects
 // - add proper logger
