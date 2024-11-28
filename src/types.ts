@@ -1,5 +1,5 @@
 export interface Job {
-  batchId: string;
+  batchId: number;
   shardId: string;
 }
 

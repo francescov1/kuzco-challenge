@@ -4,12 +4,13 @@ import { NATS_SERVER_URL } from './constants';
 import { LlmRequest } from './types';
 import { llmRequestExamples } from './fixtures';
 import { SHARD_SIZE } from './constants';
+import { initDb, getDb } from './db';
+import { Batch } from './db/models/batch';
 
 async function publishMessages() {
+  await initDb();
   const connection = await connect({ servers: NATS_SERVER_URL });
   const jetstreamClient = connection.jetstream();
-
-  const batchId = `batch_${Date.now()}`; // Generate unique batch ID
 
   const llmRequestsByShard = llmRequestExamples.reduce(
     (shards: Record<string, LlmRequest[]>, request: LlmRequest, index) => {
@@ -23,12 +24,24 @@ async function publishMessages() {
     {}
   );
 
+  const totalShards = Object.keys(llmRequestsByShard).length;
+
+  // TODO: Create a dao,
+  // TODO: Create a client for nats
+  const [newBatch] = await getDb()
+    .insert(Batch)
+    .values({
+      totalShards,
+      completionWebhookUrl: 'http://localhost:8081'
+    })
+    .returning();
+
   for (const [shardId, shardLlmRequests] of Object.entries(llmRequestsByShard)) {
     const message = { requests: shardLlmRequests };
-    const subject = jobToWorkerSubject({ batchId, shardId });
+    const subject = jobToWorkerSubject({ batchId: newBatch.id, shardId });
 
     await jetstreamClient.publish(subject, encodeJson(message), {
-      msgID: `${batchId}_${shardId}`
+      msgID: `worker_${newBatch.id}_${shardId}`
     });
     console.log(`Published to ${subject}`);
   }

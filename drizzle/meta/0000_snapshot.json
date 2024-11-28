@@ -1,5 +1,5 @@
 {
-  "id": "11519c19-d731-4b1f-820c-a0e8fda12d27",
+  "id": "27013f52-b9cf-4d37-9cd5-039b1b4a0a64",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -16,7 +16,7 @@
         },
         "batch_id": {
           "name": "batch_id",
-          "type": "text",
+          "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
@@ -76,6 +76,71 @@
           "with": {}
         }
       },
+      "foreignKeys": {
+        "requests_batch_id_batches_id_fk": {
+          "name": "requests_batch_id_batches_id_fk",
+          "tableFrom": "requests",
+          "tableTo": "batches",
+          "columnsFrom": [
+            "batch_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.batches": {
+      "name": "batches",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "total_shards": {
+          "name": "total_shards",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "completed_shards": {
+          "name": "completed_shards",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true,
+          "default": 0
+        },
+        "created_at": {
+          "name": "created_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "completion_webhook_url": {
+          "name": "completion_webhook_url",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "completed_at": {
+          "name": "completed_at",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {},
       "foreignKeys": {},
       "compositePrimaryKeys": {},
       "uniqueConstraints": {},
@@ -85,15 +150,6 @@
     }
   },
   "enums": {
-    "public.message_role": {
-      "name": "message_role",
-      "schema": "public",
-      "values": [
-        "system",
-        "user",
-        "assistant"
-      ]
-    },
     "public.status": {
       "name": "status",
       "schema": "public",

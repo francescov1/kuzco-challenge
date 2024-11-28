@@ -16,19 +16,25 @@ import {
 import { initDb, closeDb, getDb } from './db';
 import { Request } from './db/models/request';
 import * as llmClient from './llmClient';
+import { eq } from 'drizzle-orm';
+import { sql } from 'drizzle-orm';
+import { Batch } from './db/models/batch';
 
 // TODOs in order:
-// - finish completion stuff, add webhook
-// - get http server working
+// - get http server working, add route to fetch completed batches, return pending batch info too
 // - move all to docker repo
 // - setup easy startup scripts, everything init easily.
 // - Clever use of subjects
-// - Graceful shutdown
+// - add proper logger
 // - think about validation llm requests Cryptography
+
+// Docs
+// - For webhook testing, `npx http-echo-server 8081 --headers`
 
 // Opportunities:
 // - more robust handling for entire batch failure
 // - retry individual llm calls (ie in processRequest)
+// - Graceful shutdown
 
 // Deduplication:
 // Exactly one (ackAck): https://docs.nats.io/using-nats/developer/develop_jetstream/model_deep_dive#exactly-once-semantics
@@ -94,7 +100,10 @@ async function startWorker(workerId: string) {
       const resultData: ResultsMessage = { responses };
       await jetstreamClient.publish(
         jobToResultsSubject({ batchId, shardId }),
-        encodeJson(resultData)
+        encodeJson(resultData),
+        {
+          msgID: `results_${batchId}_${shardId}`
+        }
       );
 
       // TODO: test time out of this, if it times out, the message will be redelivered
@@ -132,11 +141,45 @@ async function startResultsWorker() {
       error: response.error || null
     }));
 
+    // We can assume this will be set, since the following transaction will either set it successfully or throw an error.
+    let updatedBatch!: Batch;
     await getDb().transaction(async (tx) => {
       await tx.insert(Request).values(requestInserts);
+
+      // Update batch completion
+      const results = await tx
+        .update(Batch)
+        .set({
+          completedShards: sql`completed_shards + 1`,
+          completedAt: sql`CASE WHEN completed_shards + 1 = total_shards THEN NOW() ELSE completed_at END`
+        })
+        .where(eq(Batch.id, batchId))
+        .returning();
+
+      updatedBatch = results[0];
     });
 
     console.log(`Inserted ${requestInserts.length} requests into db`);
+    // Send webhook if batch is complete
+    if (updatedBatch.completedAt) {
+      console.log(`Batch ${batchId} completed at ${updatedBatch.completedAt}`);
+
+      if (updatedBatch.completionWebhookUrl) {
+        await fetch(updatedBatch.completionWebhookUrl, {
+          method: 'POST',
+          body: JSON.stringify({
+            id: updatedBatch.id,
+            createdAt: updatedBatch.createdAt,
+            completedAt: updatedBatch.completedAt,
+            totalShards: updatedBatch.totalShards,
+            completedShards: updatedBatch.completedShards
+          })
+        }).catch((err) => {
+          console.error(`Error calling completion webhook: ${err}`);
+        });
+        console.log('Sent completion webhook');
+      }
+    }
 
     await message.ackAck();
   }
