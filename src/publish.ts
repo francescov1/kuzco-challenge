@@ -29,7 +29,9 @@ async function publishMessages() {
     const message = { requests: shardLlmRequests };
     const subject = jobToWorkerSubject({ batchId, shardId });
 
-    await jetstreamClient.publish(subject, encodeJson(message));
+    await jetstreamClient.publish(subject, encodeJson(message), {
+      msgID: `${batchId}_${shardId}`
+    });
     console.log(`Published to ${subject}`);
   }
 

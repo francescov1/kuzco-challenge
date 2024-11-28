@@ -8,15 +8,20 @@ import {
   WORKER_CONSUMER_NAME,
   WORKER_STREAM_NAME
 } from './constants';
+import { db } from './db';
+import { requests } from './db/schema';
 
-// TODO: Deduplication
-// TODO: Clever use of subjects
+// TODOs in order:
+// - Fix request and result types to reflect the actual data
+// - Get db working
+// - get http server working
+// - Clever use of subjects
+// - add webhook handling
+// - Graceful shutdown
 
-// TODO: Consider making e2e tests to test the whole system
-// TODO: Graceful shutdown
-
-// Exactly one: https://docs.nats.io/using-nats/developer/develop_jetstream/model_deep_dive#exactly-once-semantics
-// Message deduplication: https://docs.nats.io/using-nats/developer/develop_jetstream/model_deep_dive#message-deduplication
+// Deduplication:
+// Exactly one (ackAck): https://docs.nats.io/using-nats/developer/develop_jetstream/model_deep_dive#exactly-once-semantics
+// msgId header: https://docs.nats.io/using-nats/developer/develop_jetstream/model_deep_dive#message-deduplication
 
 async function setupStreams() {
   const connection = await connect({ servers: NATS_SERVER_URL });
@@ -97,14 +102,30 @@ async function startResultsWorker() {
   console.log(`Results worker is listening...`);
 
   for await (const message of messages) {
-    // const { batchId, shardId } = subjectToJob(message.subject);
-
+    const { batchId, shardId } = subjectToJob(message.subject);
     const data: ResultsMessage = message.json();
-    console.log(`Result: ${message.subject} - `, data);
 
-    // TODO: store the result
+    // Insert each request/response pair separately
+    const requestInserts = data.responses.map((response) => ({
+      batchId,
+      shardId,
+      prompt: response.prompt,
+      response: response.response,
+      model: response.model,
+      status: response.error ? 'error' : 'success',
+      error: response.error || null,
+      tokens: {
+        prompt_tokens: response.promptTokens,
+        completion_tokens: response.completionTokens,
+        total_tokens: response.totalTokens
+      },
+      latencyMs: response.latencyMs
+    }));
 
-    // TODO: detect when all shards are done and send webhook
+    // Use a transaction for atomic batch insert
+    await db.transaction(async (tx) => {
+      await tx.insert(requests).values(requestInserts);
+    });
 
     await message.ackAck();
   }
