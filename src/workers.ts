@@ -29,7 +29,7 @@ export interface ResultsMessage {
 }
 
 // TODOs in order:
-// - jsonl upload and download
+// - jsonl upload and download test
 // - move all to docker repo
 // - better abstractions, clients, daos, etc
 // - setup easy startup scripts, everything init easily.
