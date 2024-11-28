@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "start": "tsx src/index.ts",
+    "workers": "tsx watch src/workers.ts",
+    "publish": "tsx src/publish.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
