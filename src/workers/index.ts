@@ -6,11 +6,11 @@ import { sendCompletionWebhook } from '../clients/webhook';
 const jetstreamClient = new Jetstream();
 
 // TODOs in order:
+// - Think about more clever use of subjects
 // - move all to docker repo
 // - setup easy startup scripts, everything init easily.
-// - unit tests
-// - Think about more clever use of subjects
 // - documentation
+// - unit tests
 // - think about validation llm requests cryptography
 
 // Opportunities:
@@ -24,14 +24,14 @@ const jetstreamClient = new Jetstream();
 // Exactly one (ackAck): https://docs.nats.io/using-nats/developer/develop_jetstream/model_deep_dive#exactly-once-semantics
 // msgId header: https://docs.nats.io/using-nats/developer/develop_jetstream/model_deep_dive#message-deduplication
 
-async function startWorkerConsumer(): Promise<void> {
+async function runWorkerConsumer(): Promise<void> {
   await jetstreamClient.consumeWorkerMessages(async (data, subjectIdentifiers) => {
     const completedLlmRequests = await llmClient.processRequests(data.llmRequests);
     await jetstreamClient.publishResultsMessage(subjectIdentifiers, { completedLlmRequests });
   });
 }
 
-async function startResultsConsumer(): Promise<void> {
+async function runResultsConsumer(): Promise<void> {
   await jetstreamClient.consumeResultsMessages(async (data, { batchId, shardId }) => {
     const { completedLlmRequests } = data;
 
@@ -52,8 +52,8 @@ async function main() {
   await jetstreamClient.connect();
   await jetstreamClient.initializeStreams();
 
-  new Array(10).fill(0).forEach(startWorkerConsumer);
-  startResultsConsumer().catch(console.error);
+  new Array(10).fill(0).forEach(runWorkerConsumer);
+  runResultsConsumer().catch(console.error);
 }
 
 main().catch(console.error);
