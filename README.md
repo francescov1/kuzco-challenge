@@ -3,7 +3,7 @@ TODOs remaining in order:
 - Think about more clever use of subjects & deduplication
   - Exactly one (ackAck): https://docs.nats.io/using-nats/developer/develop_jetstream/model_deep_dive#exactly-once-semantics
   - msgId header: https://docs.nats.io/using-nats/developer/develop_jetstream/model_deep_dive#message-deduplication
-- move all to docker repo
+- move all to docker repo, bun
 - setup easy startup scripts, everything init easily.
 - documentation
 - unit tests
