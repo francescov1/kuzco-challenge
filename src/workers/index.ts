@@ -5,25 +5,6 @@ import { sendCompletionWebhook } from '../clients/webhook';
 
 const jetstreamClient = new Jetstream();
 
-// TODOs in order:
-// - Think about more clever use of subjects
-// - move all to docker repo
-// - setup easy startup scripts, everything init easily.
-// - documentation
-// - unit tests
-// - think about validation llm requests cryptography
-
-// Opportunities:
-// - more robust handling for entire batch failure
-// - retry individual llm calls (ie in processRequest)
-// - Graceful shutdown
-// - use file storage when uploading jsonl
-// - proper logger (eg winston)
-
-// Deduplication:
-// Exactly one (ackAck): https://docs.nats.io/using-nats/developer/develop_jetstream/model_deep_dive#exactly-once-semantics
-// msgId header: https://docs.nats.io/using-nats/developer/develop_jetstream/model_deep_dive#message-deduplication
-
 async function runWorkerConsumer(): Promise<void> {
   await jetstreamClient.consumeWorkerMessages(async (data, subjectIdentifiers) => {
     const completedLlmRequests = await llmClient.processRequests(data.llmRequests);
