@@ -64,7 +64,7 @@ export const saveCompletedLlmRequests = async (
       .where(eq(Batch.id, subjectIdentifiers.batchId))
       .returning();
 
-    updatedBatch = results[0];
+    [updatedBatch] = results;
   });
 
   console.log(

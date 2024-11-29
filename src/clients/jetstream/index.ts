@@ -23,7 +23,9 @@ import { encodeJson, parseSubject, toResultsSubject, toWorkerSubject } from './u
 // TODO: Better name
 export class Jetstream {
   private connection: NatsConnection | null = null;
+
   private jsClient: JetStreamClient | null = null;
+
   private jetstreamManager: JetStreamManager | null = null;
 
   async connect() {
@@ -41,7 +43,9 @@ export class Jetstream {
   }
 
   async initializeStreams() {
-    if (!this.jetstreamManager) throw new Error('Not connected to NATS');
+    if (!this.jetstreamManager) {
+      throw new Error('Not connected to NATS');
+    }
 
     await this.jetstreamManager.streams.add({
       name: WORKER_STREAM_NAME,
@@ -75,7 +79,9 @@ export class Jetstream {
   async consumeWorkerMessages(
     handler: (data: WorkerMessageData, subjectIdentifiers: SubjectIdentifiers) => Promise<void>
   ) {
-    if (!this.jsClient) throw new Error('Not connected to NATS');
+    if (!this.jsClient) {
+      throw new Error('Not connected to NATS');
+    }
 
     const consumer = await this.jsClient.consumers.get(WORKER_STREAM_NAME, WORKER_CONSUMER_NAME);
     const messages = await consumer.consume();
@@ -94,7 +100,7 @@ export class Jetstream {
         await message.ackAck();
       } catch (err) {
         console.error(`Worker consumer error:`, err);
-        await message.nak();
+        message.nak();
       }
     }
   }
@@ -102,7 +108,9 @@ export class Jetstream {
   async consumeResultsMessages(
     handler: (data: ResultsMessageData, subjectIdentifiers: SubjectIdentifiers) => Promise<void>
   ) {
-    if (!this.jsClient) throw new Error('Not connected to NATS');
+    if (!this.jsClient) {
+      throw new Error('Not connected to NATS');
+    }
 
     const consumer = await this.jsClient.consumers.get(RESULTS_STREAM_NAME, RESULTS_CONSUMER_NAME);
     const messages = await consumer.consume();
@@ -122,13 +130,15 @@ export class Jetstream {
         await message.ackAck();
       } catch (err) {
         console.error('Results worker error:', err);
-        await message.nak();
+        message.nak();
       }
     }
   }
 
   async publishResultsMessage(subjectIdentifiers: SubjectIdentifiers, data: ResultsMessageData) {
-    if (!this.jsClient) throw new Error('Not connected to NATS');
+    if (!this.jsClient) {
+      throw new Error('Not connected to NATS');
+    }
 
     const subject = toResultsSubject(subjectIdentifiers);
 
@@ -141,7 +151,9 @@ export class Jetstream {
   }
 
   async publishWorkerMessage(subjectIdentifiers: SubjectIdentifiers, data: WorkerMessageData) {
-    if (!this.jsClient) throw new Error('Not connected to NATS');
+    if (!this.jsClient) {
+      throw new Error('Not connected to NATS');
+    }
 
     const subject = toWorkerSubject(subjectIdentifiers);
 

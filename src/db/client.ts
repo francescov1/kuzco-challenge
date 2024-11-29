@@ -6,6 +6,7 @@ import { Batch, LlmRequest } from './models';
 
 export class DatabaseClient {
   public db: ReturnType<typeof drizzle>;
+
   private pool: Pool;
 
   constructor() {

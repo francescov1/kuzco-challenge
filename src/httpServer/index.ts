@@ -1,10 +1,8 @@
 import express from 'express';
 import multer from 'multer';
 import Bluebird from 'bluebird';
-import { parseJsonlBatchFile } from './validators/createBatch';
-import { getBatchParamsValidator } from './validators/getBatch';
-import { toBatchDto } from './dtos/batch';
-import { toBatchResultsFileString } from './dtos/batchResults';
+import { parseJsonlBatchFile, getBatchParamsValidator } from './validators';
+import { toBatchDto, toBatchResultsFileString } from './dtos';
 import { shardLlmRequests } from './utils';
 import { Jetstream } from '../clients/jetstream';
 import { dao } from '../db';
@@ -32,11 +30,11 @@ app.post('/batches', upload.single('file'), async (req, res) => {
 
     await Bluebird.map(
       Object.entries(shardIdToLlmRequestsMap),
-      async ([shardId, shardLlmRequests]) => {
+      async ([shardId, llmRequestsShard]) => {
         const subjectIdentifiers = { batchId: newBatch.id, shardId };
 
         await jetstreamClient.publishWorkerMessage(subjectIdentifiers, {
-          llmRequests: shardLlmRequests
+          llmRequests: llmRequestsShard
         });
       }
     );
@@ -88,8 +86,13 @@ app.get('/batches/:batchId/messages', async (req, res) => {
 
 const PORT = process.env.PORT || 8080;
 
-jetstreamClient.connect().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server is listening on port ${PORT}`);
+jetstreamClient
+  .connect()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Server is listening on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error('Error connecting to Jetstream:', error);
   });
-});

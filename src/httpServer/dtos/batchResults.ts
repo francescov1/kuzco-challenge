@@ -1,7 +1,8 @@
 import { LlmRequest } from '../../db/models';
 
-export const toBatchResultsFileString = (llmRequests: LlmRequest[]): string => {
-  return llmRequests
+// TODO: Better name
+export const toBatchResultsFileString = (llmRequests: LlmRequest[]): string =>
+  llmRequests
     .map((llmRequest) =>
       JSON.stringify({
         messages: llmRequest.messages,
@@ -11,4 +12,3 @@ export const toBatchResultsFileString = (llmRequests: LlmRequest[]): string => {
       })
     )
     .join('\n');
-};
