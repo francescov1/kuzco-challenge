@@ -5,14 +5,15 @@ import { llmRequestExamples } from './fixtures';
 import { SHARD_SIZE } from './constants';
 import { dbClient } from './db';
 import { Batch } from './db/models/batch';
-import { LlmRequestValidated } from './httpServer/validators/createBatch';
+import { LlmRequestType } from './types';
+import { WorkerMessage } from './workers';
 
-export const publishMessages = async (llmRequests: LlmRequestValidated[]): Promise<Batch> => {
+export const publishMessages = async (llmRequests: LlmRequestType[]): Promise<Batch> => {
   const connection = await connect({ servers: NATS_SERVER_URL });
   const jetstreamClient = connection.jetstream();
 
   const llmRequestsByShard = llmRequests.reduce(
-    (shards: Record<string, LlmRequestValidated[]>, request: LlmRequestValidated, index) => {
+    (shards: Record<string, LlmRequestType[]>, request, index) => {
       const shardId = `shard_${Math.floor(index / SHARD_SIZE)}`;
       if (!shards[shardId]) {
         shards[shardId] = [];
@@ -25,18 +26,10 @@ export const publishMessages = async (llmRequests: LlmRequestValidated[]): Promi
 
   const totalShards = Object.keys(llmRequestsByShard).length;
 
-  // TODO: Create a dao,
-  // TODO: Create a client for nats
-  const [newBatch] = await dbClient.db
-    .insert(Batch)
-    .values({
-      totalShards,
-      completionWebhookUrl: 'http://localhost:8081'
-    })
-    .returning();
+  const [newBatch] = await dbClient.db.insert(Batch).values({ totalShards }).returning();
 
   for (const [shardId, shardLlmRequests] of Object.entries(llmRequestsByShard)) {
-    const message = { requests: shardLlmRequests };
+    const message: WorkerMessage = { llmRequests: shardLlmRequests };
     const subject = jobToWorkerSubject({ batchId: newBatch.id, shardId });
 
     await jetstreamClient.publish(subject, encodeJson(message), {
@@ -49,6 +42,6 @@ export const publishMessages = async (llmRequests: LlmRequestValidated[]): Promi
   return newBatch;
 };
 
-publishMessages(llmRequestExamples).catch((err) => {
-  console.error('Error publishing messages:', err);
-});
+// publishMessages(llmRequestExamples).catch((err) => {
+//   console.error('Error publishing messages:', err);
+// });

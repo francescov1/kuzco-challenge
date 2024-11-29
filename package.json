@@ -7,7 +7,7 @@
     "start": "tsx src/index.ts",
     "workers": "tsx watch src/workers.ts",
     "publish": "tsx src/publish.ts",
-    "server": "tsx src/httpServer.ts",
+    "server": "tsx watch src/httpServer/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate"

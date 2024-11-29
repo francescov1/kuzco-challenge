@@ -1,0 +1,4 @@
+{"model":"mistralai/mistral-nemo-12b-instruct/fp-8","messages":[{"content":"You answer any message","role":"system"},{"content":"hello","role":"user"}]}
+{"model":"mistralai/mistral-nemo-12b-instruct/fp-8","messages":[{"content":"You answer any message","role":"system"},{"content":"whats up","role":"user"}]}
+{"model":"mistralai/mistral-nemo-12b-instruct/fp-8","messages":[{"content":"You answer any message","role":"system"},{"content":"how are you?","role":"user"}]}
+{"model":"mistralai/mistral-nemo-12b-instruct/fp-8","messages":[{"content":"You answer any message","role":"system"},{"content":"hi","role":"user"}]}

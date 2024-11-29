@@ -1,11 +1,11 @@
 {
-  "id": "27013f52-b9cf-4d37-9cd5-039b1b4a0a64",
+  "id": "54225cec-5b6d-41d6-8146-e4f2de6fbcc1",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.requests": {
-      "name": "requests",
+    "public.llm_requests": {
+      "name": "llm_requests",
       "schema": "",
       "columns": {
         "id": {
@@ -77,9 +77,9 @@
         }
       },
       "foreignKeys": {
-        "requests_batch_id_batches_id_fk": {
-          "name": "requests_batch_id_batches_id_fk",
-          "tableFrom": "requests",
+        "llm_requests_batch_id_batches_id_fk": {
+          "name": "llm_requests_batch_id_batches_id_fk",
+          "tableFrom": "llm_requests",
           "tableTo": "batches",
           "columnsFrom": [
             "batch_id"

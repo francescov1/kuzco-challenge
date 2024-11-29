@@ -10,10 +10,7 @@ export const llmRequestValidator = z.object({
   messages: z.array(messageValidator)
 });
 
-// TODO: better name
-export type LlmRequestValidated = z.infer<typeof llmRequestValidator>;
-
-export const parseJsonlBatchFile = (buffer: Buffer): LlmRequestValidated[] => {
+export const parseJsonlBatchFile = (buffer: Buffer): z.infer<typeof llmRequestValidator>[] => {
   const fileContent = buffer.toString('utf-8');
   return fileContent
     .split('\n')
@@ -23,15 +20,3 @@ export const parseJsonlBatchFile = (buffer: Buffer): LlmRequestValidated[] => {
       return llmRequestValidator.parse(parsed);
     });
 };
-
-// TODO: Move
-interface Message {
-  content: string;
-  role: 'system' | 'user' | 'assistant';
-}
-export interface CompletedLlmRequests {
-  model: string;
-  messages: Message[];
-  status: 'success' | 'error';
-  error: string | null;
-}

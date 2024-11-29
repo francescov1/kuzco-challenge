@@ -1,5 +1,4 @@
 import { Batch } from '../../db/models';
-import { CompletedLlmRequests } from '../validators/createBatch';
 
 export interface BatchDto {
   id: number;

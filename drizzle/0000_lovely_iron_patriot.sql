@@ -1,5 +1,5 @@
 CREATE TYPE "public"."status" AS ENUM('success', 'error');--> statement-breakpoint
-CREATE TABLE IF NOT EXISTS "requests" (
+CREATE TABLE IF NOT EXISTS "llm_requests" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"batch_id" integer NOT NULL,
 	"shard_id" text NOT NULL,
@@ -20,9 +20,9 @@ CREATE TABLE IF NOT EXISTS "batches" (
 );
 --> statement-breakpoint
 DO $$ BEGIN
- ALTER TABLE "requests" ADD CONSTRAINT "requests_batch_id_batches_id_fk" FOREIGN KEY ("batch_id") REFERENCES "public"."batches"("id") ON DELETE no action ON UPDATE no action;
+ ALTER TABLE "llm_requests" ADD CONSTRAINT "llm_requests_batch_id_batches_id_fk" FOREIGN KEY ("batch_id") REFERENCES "public"."batches"("id") ON DELETE no action ON UPDATE no action;
 EXCEPTION
  WHEN duplicate_object THEN null;
 END $$;
 --> statement-breakpoint
-CREATE INDEX IF NOT EXISTS "batch_id_idx" ON "requests" USING btree ("batch_id");
+CREATE INDEX IF NOT EXISTS "batch_id_idx" ON "llm_requests" USING btree ("batch_id");

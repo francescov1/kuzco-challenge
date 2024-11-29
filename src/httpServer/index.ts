@@ -14,7 +14,7 @@ const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(express.json());
 
-// Route to publish messages from JSONL file
+// Create batch
 app.post('/batches', upload.single('file'), async (req, res) => {
   try {
     if (!req.file) {
@@ -22,6 +22,7 @@ app.post('/batches', upload.single('file'), async (req, res) => {
     }
 
     const llmRequests = parseJsonlBatchFile(req.file.buffer);
+    console.log('llmRequests', llmRequests);
 
     const batch = await publishMessages(llmRequests);
     return res.status(200).json(toBatchDto(batch));
@@ -31,7 +32,7 @@ app.post('/batches', upload.single('file'), async (req, res) => {
   }
 });
 
-// Route to get batch information (without messages)
+// Get batch
 app.get('/batches/:batchId', async (req, res) => {
   try {
     const { batchId } = getBatchParamsValidator.parse(req.params);

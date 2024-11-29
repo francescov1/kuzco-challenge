@@ -18,10 +18,10 @@ import * as llmClient from './llmClient';
 import { eq } from 'drizzle-orm';
 import { sql } from 'drizzle-orm';
 import { Batch } from './db/models/batch';
-import { CompletedLlmRequests, LlmRequestValidated } from './httpServer/validators/createBatch';
+import { CompletedLlmRequests, LlmRequestType } from './types';
 
 export interface WorkerMessage {
-  llmRequests: LlmRequestValidated[];
+  llmRequests: LlmRequestType[];
 }
 
 export interface ResultsMessage {
@@ -120,7 +120,7 @@ async function startWorker(workerId: string) {
       // TODO: test time out of this, if it times out, the message will be redelivered
       await message.ackAck();
     } catch (err) {
-      console.error(`Worker ${workerId} error: ${err}`);
+      console.error(`Worker ${workerId} error:`, err);
       await message.nak();
     }
   }
