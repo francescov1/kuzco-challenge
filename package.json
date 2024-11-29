@@ -6,7 +6,6 @@
   "scripts": {
     "start": "tsx src/index.ts",
     "workers": "tsx watch src/workers.ts",
-    "publish": "tsx src/publish.ts",
     "server": "tsx watch src/httpServer/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
     "generate": "drizzle-kit generate",
@@ -16,6 +15,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "bluebird": "^3.7.2",
     "drizzle-orm": "^0.36.4",
     "express": "^4.21.1",
     "multer": "^1.4.5-lts.1",
@@ -24,6 +24,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/bluebird": "^3.5.42",
     "@types/express": "^4.17.21",
     "@types/multer": "^1.4.12",
     "@types/pg": "^8.11.10",

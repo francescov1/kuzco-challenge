@@ -1,13 +1,17 @@
 import express from 'express';
 import multer from 'multer';
-import { dbClient } from '../db';
-import { publishMessages } from '../publish';
+import Bluebird from 'bluebird';
+import { dbClient } from '../db/client';
 import { Batch, LlmRequest } from '../db/models';
 import { eq } from 'drizzle-orm';
 import { parseJsonlBatchFile } from './validators/createBatch';
 import { toBatchDto } from './dtos/batch';
 import { getBatchParamsValidator } from './validators/getBatch';
 import { toBatchResultsFileString } from './dtos/batchResults';
+import { shardLlmRequests } from './utils';
+import { Jetstream } from '../clients/jetstream';
+
+const jetstreamClient = new Jetstream();
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -22,10 +26,24 @@ app.post('/batches', upload.single('file'), async (req, res) => {
     }
 
     const llmRequests = parseJsonlBatchFile(req.file.buffer);
-    console.log('llmRequests', llmRequests);
+    const shardIdToLlmRequestsMap = shardLlmRequests(llmRequests);
 
-    const batch = await publishMessages(llmRequests);
-    return res.status(200).json(toBatchDto(batch));
+    const totalShards = Object.keys(shardIdToLlmRequestsMap).length;
+
+    const [newBatch] = await dbClient.db.insert(Batch).values({ totalShards }).returning();
+
+    await Bluebird.map(
+      Object.entries(shardIdToLlmRequestsMap),
+      async ([shardId, shardLlmRequests]) => {
+        const subjectIdentifiers = { batchId: newBatch.id, shardId };
+
+        await jetstreamClient.publishWorkerMessage(subjectIdentifiers, {
+          llmRequests: shardLlmRequests
+        });
+      }
+    );
+
+    return res.status(200).json(toBatchDto(newBatch));
   } catch (error) {
     console.error('Error publishing messages:', error);
     return res.status(500).json({ error: 'Failed to publish messages' });
@@ -94,6 +112,8 @@ app.get('/batches/:batchId/messages', async (req, res) => {
 
 const PORT = process.env.PORT || 8080;
 
-app.listen(PORT, () => {
-  console.log(`Server is listening on port ${PORT}`);
+jetstreamClient.connect().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server is listening on port ${PORT}`);
+  });
 });

@@ -1,15 +1,10 @@
-import { TEST_ERROR_PROMPT } from './constants';
+import { TEST_ERROR_PROMPT } from '../../constants';
 import { CompletedLlmRequests, LlmRequestType } from './types';
-
-export const processRequests = async (
-  llmRequests: LlmRequestType[]
-): Promise<CompletedLlmRequests[]> => {
-  return Promise.all(llmRequests.map(processRequest));
-};
 
 const processRequest = async (request: LlmRequestType): Promise<CompletedLlmRequests> => {
   try {
-    // TODO: Do we need to make this more robust? is this an ok assyumtpion? depends on api validation
+    // NOTE: I'm assuming the last message in the array is the user message.
+    // Since this is just a dummy function I assume this is fine.
     const userMessage = request.messages[request.messages.length - 1];
 
     // Check for test error condition
@@ -37,4 +32,10 @@ const processRequest = async (request: LlmRequestType): Promise<CompletedLlmRequ
       error: error instanceof Error ? error.message : 'Unknown error occurred'
     };
   }
+};
+
+export const processRequests = async (
+  llmRequests: LlmRequestType[]
+): Promise<CompletedLlmRequests[]> => {
+  return Promise.all(llmRequests.map(processRequest));
 };

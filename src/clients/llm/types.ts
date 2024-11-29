@@ -1,8 +1,3 @@
-export interface Job {
-  batchId: number;
-  shardId: string;
-}
-
 interface Message {
   content: string;
   role: 'system' | 'user' | 'assistant';
