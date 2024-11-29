@@ -1,4 +1,4 @@
-import { TEST_ERROR_PROMPT } from '../../constants';
+import { TEST_ERROR_PROMPT } from './constants';
 import { CompletedLlmRequests, LlmRequestType } from './types';
 
 const processRequest = (request: LlmRequestType): CompletedLlmRequests => {
