@@ -20,17 +20,16 @@ import {
 import { WorkerMessageData, ResultsMessageData, SubjectIdentifiers } from './types';
 import { encodeJson, parseSubject, toResultsSubject, toWorkerSubject } from './utils';
 
-// TODO: Better name to avoid clashing with nats library
-export class Jetstream {
+export class NatsClient {
   private connection: NatsConnection | null = null;
 
-  private jsClient: JetStreamClient | null = null;
+  private jetstreamClient: JetStreamClient | null = null;
 
   private jetstreamManager: JetStreamManager | null = null;
 
   async connect() {
     this.connection = await connect({ servers: NATS_SERVER_URL });
-    this.jsClient = this.connection.jetstream();
+    this.jetstreamClient = this.connection.jetstream();
     this.jetstreamManager = await this.connection.jetstreamManager();
 
     console.log('Connected to NATS');
@@ -39,7 +38,7 @@ export class Jetstream {
   async disconnect() {
     await this.connection?.close();
     this.connection = null;
-    this.jsClient = null;
+    this.jetstreamClient = null;
   }
 
   async initializeStreams() {
@@ -79,11 +78,14 @@ export class Jetstream {
   async consumeWorkerMessages(
     handler: (data: WorkerMessageData, subjectIdentifiers: SubjectIdentifiers) => Promise<void>
   ) {
-    if (!this.jsClient) {
+    if (!this.jetstreamClient) {
       throw new Error('Not connected to NATS');
     }
 
-    const consumer = await this.jsClient.consumers.get(WORKER_STREAM_NAME, WORKER_CONSUMER_NAME);
+    const consumer = await this.jetstreamClient.consumers.get(
+      WORKER_STREAM_NAME,
+      WORKER_CONSUMER_NAME
+    );
     const messages = await consumer.consume();
 
     console.log(`Worker consumer is listening...`);
@@ -108,11 +110,14 @@ export class Jetstream {
   async consumeResultsMessages(
     handler: (data: ResultsMessageData, subjectIdentifiers: SubjectIdentifiers) => Promise<void>
   ) {
-    if (!this.jsClient) {
+    if (!this.jetstreamClient) {
       throw new Error('Not connected to NATS');
     }
 
-    const consumer = await this.jsClient.consumers.get(RESULTS_STREAM_NAME, RESULTS_CONSUMER_NAME);
+    const consumer = await this.jetstreamClient.consumers.get(
+      RESULTS_STREAM_NAME,
+      RESULTS_CONSUMER_NAME
+    );
     const messages = await consumer.consume();
 
     console.log('Results worker is listening...');
@@ -136,13 +141,13 @@ export class Jetstream {
   }
 
   async publishResultsMessage(subjectIdentifiers: SubjectIdentifiers, data: ResultsMessageData) {
-    if (!this.jsClient) {
+    if (!this.jetstreamClient) {
       throw new Error('Not connected to NATS');
     }
 
     const subject = toResultsSubject(subjectIdentifiers);
 
-    await this.jsClient.publish(subject, encodeJson(data), {
+    await this.jetstreamClient.publish(subject, encodeJson(data), {
       // TODO: Is there a better message id to use for deduplication?
       msgID: subject
     });
@@ -151,13 +156,13 @@ export class Jetstream {
   }
 
   async publishWorkerMessage(subjectIdentifiers: SubjectIdentifiers, data: WorkerMessageData) {
-    if (!this.jsClient) {
+    if (!this.jetstreamClient) {
       throw new Error('Not connected to NATS');
     }
 
     const subject = toWorkerSubject(subjectIdentifiers);
 
-    await this.jsClient.publish(subject, encodeJson(data), {
+    await this.jetstreamClient.publish(subject, encodeJson(data), {
       // TODO: Is there a better message id to use for deduplication?
       msgID: subject
     });

@@ -4,10 +4,10 @@ import Bluebird from 'bluebird';
 import { parseJsonlBatchFile, getBatchParamsValidator } from './validators';
 import { toBatchDto, toBatchResultsFileString } from './dtos';
 import { shardLlmRequests } from './utils';
-import { Jetstream } from '../clients/jetstream';
+import { NatsClient } from '../clients/nats';
 import { dao } from '../db';
 
-const jetstreamClient = new Jetstream();
+const natsClient = new NatsClient();
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -33,7 +33,7 @@ app.post('/batches', upload.single('file'), async (req, res) => {
       async ([shardId, llmRequestsShard]) => {
         const subjectIdentifiers = { batchId: newBatch.id, shardId };
 
-        await jetstreamClient.publishWorkerMessage(subjectIdentifiers, {
+        await natsClient.publishWorkerMessage(subjectIdentifiers, {
           llmRequests: llmRequestsShard
         });
       }
@@ -86,7 +86,7 @@ app.get('/batches/:batchId/messages', async (req, res) => {
 
 const PORT = process.env.PORT || 8080;
 
-jetstreamClient
+natsClient
   .connect()
   .then(() => {
     app.listen(PORT, () => {

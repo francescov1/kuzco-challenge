@@ -1,4 +1,4 @@
-import { SHARD_SIZE } from '../clients/jetstream/constants';
+import { SHARD_SIZE } from '../clients/nats/constants';
 import { LlmRequestType } from '../clients/llm/types';
 
 interface ShardIdToLlmRequestsMap {

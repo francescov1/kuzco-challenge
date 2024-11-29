@@ -1,19 +1,19 @@
 import * as llmClient from '../clients/llm';
 import { dao } from '../db';
-import { Jetstream } from '../clients/jetstream';
+import { NatsClient } from '../clients/nats';
 import { sendCompletionWebhook } from '../clients/webhook';
 
-const jetstreamClient = new Jetstream();
+const natsClient = new NatsClient();
 
 async function runWorkerConsumer(): Promise<void> {
-  await jetstreamClient.consumeWorkerMessages(async (data, subjectIdentifiers) => {
+  await natsClient.consumeWorkerMessages(async (data, subjectIdentifiers) => {
     const completedLlmRequests = await llmClient.processRequests(data.llmRequests);
-    await jetstreamClient.publishResultsMessage(subjectIdentifiers, { completedLlmRequests });
+    await natsClient.publishResultsMessage(subjectIdentifiers, { completedLlmRequests });
   });
 }
 
 async function runResultsConsumer(): Promise<void> {
-  await jetstreamClient.consumeResultsMessages(async (data, { batchId, shardId }) => {
+  await natsClient.consumeResultsMessages(async (data, { batchId, shardId }) => {
     const { completedLlmRequests } = data;
 
     const updatedBatch = await dao.saveCompletedLlmRequests(completedLlmRequests, {
@@ -30,8 +30,8 @@ async function runResultsConsumer(): Promise<void> {
 }
 
 async function main() {
-  await jetstreamClient.connect();
-  await jetstreamClient.initializeStreams();
+  await natsClient.connect();
+  await natsClient.initializeStreams();
 
   new Array(10).fill(0).forEach(runWorkerConsumer);
   runResultsConsumer().catch(console.error);
