@@ -1,16 +1,13 @@
-import { STATUS } from './constants';
-import { dbClient } from './db/client';
-import { LlmRequest } from './db/models';
 import * as llmClient from './clients/llm';
-import { eq } from 'drizzle-orm';
-import { sql } from 'drizzle-orm';
-import { Batch } from './db/models/batch';
+import { dao } from './db';
 import { Jetstream } from './clients/jetstream';
+import { sendCompletionWebhook } from './clients/webhook';
 
 const jetstreamClient = new Jetstream();
 
 // TODOs in order:
-// - daos
+
+// - linter and formatter
 // - move all to docker repo
 // - setup easy startup scripts, everything init easily.
 // - unit tests
@@ -39,52 +36,17 @@ async function startWorkerConsumer() {
 
 async function startResultsConsumer() {
   await jetstreamClient.consumeResultsMessages(async (data, { batchId, shardId }) => {
-    const requestInserts = data.completedLlmRequests.map((response) => ({
+    const { completedLlmRequests } = data;
+
+    const updatedBatch = await dao.saveCompletedLlmRequests(completedLlmRequests, {
       batchId,
-      shardId,
-      messages: response.messages,
-      model: response.model,
-      status: response.error ? STATUS.ERROR : STATUS.SUCCESS,
-      error: response.error || null
-    }));
-
-    // We can assume this will be set, since the following transaction will either set it successfully or throw an error.
-    let updatedBatch!: Batch;
-    await dbClient.db.transaction(async (tx) => {
-      await tx.insert(LlmRequest).values(requestInserts);
-
-      const results = await tx
-        .update(Batch)
-        .set({
-          completedShards: sql`completed_shards + 1`,
-          completedAt: sql`CASE WHEN completed_shards + 1 = total_shards THEN NOW() ELSE completed_at END`
-        })
-        .where(eq(Batch.id, batchId))
-        .returning();
-
-      updatedBatch = results[0];
+      shardId
     });
-
-    console.log(`Inserted ${requestInserts.length} requests into db`);
 
     if (updatedBatch.completedAt) {
       console.log(`Batch ${batchId} completed at ${updatedBatch.completedAt}`);
 
-      // Send webhook if completionWebhookUrl is set
-      if (updatedBatch.completionWebhookUrl) {
-        await fetch(updatedBatch.completionWebhookUrl, {
-          method: 'POST',
-          body: JSON.stringify({
-            id: updatedBatch.id,
-            createdAt: updatedBatch.createdAt,
-            completedAt: updatedBatch.completedAt,
-            totalShards: updatedBatch.totalShards,
-            completedShards: updatedBatch.completedShards
-          })
-        });
-
-        console.log('Sent completion webhook');
-      }
+      await sendCompletionWebhook(updatedBatch);
     }
   });
 }

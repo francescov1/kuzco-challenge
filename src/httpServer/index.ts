@@ -1,15 +1,13 @@
 import express from 'express';
 import multer from 'multer';
 import Bluebird from 'bluebird';
-import { dbClient } from '../db/client';
-import { Batch, LlmRequest } from '../db/models';
-import { eq } from 'drizzle-orm';
 import { parseJsonlBatchFile } from './validators/createBatch';
-import { toBatchDto } from './dtos/batch';
 import { getBatchParamsValidator } from './validators/getBatch';
+import { toBatchDto } from './dtos/batch';
 import { toBatchResultsFileString } from './dtos/batchResults';
 import { shardLlmRequests } from './utils';
 import { Jetstream } from '../clients/jetstream';
+import { dao } from '../db';
 
 const jetstreamClient = new Jetstream();
 
@@ -30,7 +28,7 @@ app.post('/batches', upload.single('file'), async (req, res) => {
 
     const totalShards = Object.keys(shardIdToLlmRequestsMap).length;
 
-    const [newBatch] = await dbClient.db.insert(Batch).values({ totalShards }).returning();
+    const newBatch = await dao.createBatch(totalShards);
 
     await Bluebird.map(
       Object.entries(shardIdToLlmRequestsMap),
@@ -55,13 +53,8 @@ app.get('/batches/:batchId', async (req, res) => {
   try {
     const { batchId } = getBatchParamsValidator.parse(req.params);
 
-    const results = await dbClient.db.select().from(Batch).where(eq(Batch.id, batchId)).limit(1);
+    const batch = await dao.getBatchById(batchId);
 
-    if (!results || results.length === 0) {
-      return res.status(404).json({ error: 'Batch not found' });
-    }
-
-    const batch = results[0];
     return res.status(200).json(toBatchDto(batch));
   } catch (error) {
     console.error('Error fetching batch:', error);
@@ -69,35 +62,18 @@ app.get('/batches/:batchId', async (req, res) => {
   }
 });
 
-// Route to download completed messages as JSONL
+// Download completed messages as JSONL
 app.get('/batches/:batchId/messages', async (req, res) => {
   try {
     const { batchId } = getBatchParamsValidator.parse(req.params);
 
-    // First fetch the batch
-    const batchResults = await dbClient.db
-      .select()
-      .from(Batch)
-      .where(eq(Batch.id, batchId))
-      .limit(1);
+    const batch = await dao.getBatchById(batchId);
 
-    if (!batchResults || batchResults.length === 0) {
-      return res.status(404).json({ error: 'Batch not found' });
-    }
-
-    const batch = batchResults[0];
     if (!batch.completedAt) {
       return res.status(400).json({ error: 'Cannot download messages: batch is not completed' });
     }
 
-    const llmRequests = await dbClient.db
-      .select()
-      .from(LlmRequest)
-      .where(eq(LlmRequest.batchId, batchId));
-
-    if (!llmRequests || llmRequests.length === 0) {
-      return res.status(404).json({ error: 'No messages found for this batch' });
-    }
+    const llmRequests = await dao.getLlmRequestsByBatchId(batchId);
 
     const jsonlContent = toBatchResultsFileString(llmRequests);
 

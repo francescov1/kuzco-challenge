@@ -3,6 +3,8 @@ interface Message {
   role: 'system' | 'user' | 'assistant';
 }
 
+// TODO: Probably wanna move these to a common type
+
 // TODO: Better name
 export interface LlmRequestType {
   model: string;

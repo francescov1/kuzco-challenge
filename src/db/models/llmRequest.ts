@@ -8,8 +8,12 @@ import {
   pgTable,
   integer
 } from 'drizzle-orm/pg-core';
-import { STATUS } from '../../constants';
 import { Batch } from './batch';
+
+export const STATUS = {
+  SUCCESS: 'success' as const,
+  ERROR: 'error' as const
+};
 
 export const statusEnum = pgEnum('status', [STATUS.SUCCESS, STATUS.ERROR]);
 
