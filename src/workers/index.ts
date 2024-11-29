@@ -1,27 +1,24 @@
-import * as llmClient from './clients/llm';
-import { dao } from './db';
-import { Jetstream } from './clients/jetstream';
-import { sendCompletionWebhook } from './clients/webhook';
+import * as llmClient from '../clients/llm';
+import { dao } from '../db';
+import { Jetstream } from '../clients/jetstream';
+import { sendCompletionWebhook } from '../clients/webhook';
 
 const jetstreamClient = new Jetstream();
 
 // TODOs in order:
-
-// - linter and formatter
 // - move all to docker repo
 // - setup easy startup scripts, everything init easily.
 // - unit tests
-// - Clever use of subjects
-// - think about validation llm requests Cryptography
-
-// Docs
-// - For webhook testing, `npx http-echo-server 8081 --headers`
+// - Think about more clever use of subjects
+// - documentation
+// - think about validation llm requests cryptography
 
 // Opportunities:
 // - more robust handling for entire batch failure
 // - retry individual llm calls (ie in processRequest)
 // - Graceful shutdown
 // - use file storage when uploading jsonl
+// - proper logger (eg winston)
 
 // Deduplication:
 // Exactly one (ackAck): https://docs.nats.io/using-nats/developer/develop_jetstream/model_deep_dive#exactly-once-semantics

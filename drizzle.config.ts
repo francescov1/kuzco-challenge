@@ -9,6 +9,6 @@ export default defineConfig({
     host: 'localhost',
     port: 5432,
     database: 'main',
-    ssl: false // TODO: Try removing when in docker
+    ssl: false
   }
 });

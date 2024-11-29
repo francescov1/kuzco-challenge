@@ -5,7 +5,7 @@ import { dbClient } from './client';
 import { Batch } from './models/batch';
 import { LlmRequest, STATUS } from './models/llmRequest';
 
-// TODO: Either define these inline, or split them to a common type
+// TODO: Split these out to a common type
 interface SubjectIdentifiers {
   batchId: number;
   shardId: string;

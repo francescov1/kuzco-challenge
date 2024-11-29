@@ -20,7 +20,7 @@ import {
 import { WorkerMessageData, ResultsMessageData, SubjectIdentifiers } from './types';
 import { encodeJson, parseSubject, toResultsSubject, toWorkerSubject } from './utils';
 
-// TODO: Better name
+// TODO: Better name to avoid clashing with nats library
 export class Jetstream {
   private connection: NatsConnection | null = null;
 
