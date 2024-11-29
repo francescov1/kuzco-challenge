@@ -7,6 +7,7 @@ TODOs remaining in order:
 - setup easy startup scripts, everything init easily.
 - documentation
 - unit tests
+- cleanup any remaining todos in code
 - think about validation llm requests cryptography
 
 Opportunities to discuss in docs:
