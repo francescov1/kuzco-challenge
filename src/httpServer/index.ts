@@ -1,10 +1,10 @@
 import express from 'express';
 import multer from 'multer';
 import Bluebird from 'bluebird';
-import { parseJsonlBatchFile, getBatchParamsValidator } from './validators';
-import { toBatchDto, toBatchResultsFileString } from './dtos';
-import { shardLlmRequests } from './utils';
-import { NatsClient } from '../clients/nats';
+import * as validators from './validators';
+import * as dtos from './dtos';
+import * as utils from './utils';
+import { NatsClient } from '../clients';
 import { dao } from '../db';
 
 const natsClient = new NatsClient();
@@ -21,12 +21,13 @@ app.post('/batches', upload.single('file'), async (req, res) => {
       return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const llmRequests = parseJsonlBatchFile(req.file.buffer);
-    const shardIdToLlmRequestsMap = shardLlmRequests(llmRequests);
+    const llmRequests = validators.parseJsonlBatchFile(req.file.buffer);
+
+    const shardIdToLlmRequestsMap = utils.shardLlmRequests(llmRequests);
 
     const totalShards = Object.keys(shardIdToLlmRequestsMap).length;
 
-    const newBatch = await dao.createBatch(totalShards);
+    const newBatch = await dao.createBatch({ totalShards });
 
     await Bluebird.map(
       Object.entries(shardIdToLlmRequestsMap),
@@ -39,7 +40,7 @@ app.post('/batches', upload.single('file'), async (req, res) => {
       }
     );
 
-    return res.status(200).json(toBatchDto(newBatch));
+    return res.status(200).json(dtos.toBatchDto(newBatch));
   } catch (error) {
     console.error('Error publishing messages:', error);
     return res.status(500).json({ error: 'Failed to publish messages' });
@@ -49,11 +50,11 @@ app.post('/batches', upload.single('file'), async (req, res) => {
 // Get batch
 app.get('/batches/:batchId', async (req, res) => {
   try {
-    const { batchId } = getBatchParamsValidator.parse(req.params);
+    const { batchId } = validators.batchIdParamsValidator.parse(req.params);
 
     const batch = await dao.getBatchById(batchId);
 
-    return res.status(200).json(toBatchDto(batch));
+    return res.status(200).json(dtos.toBatchDto(batch));
   } catch (error) {
     console.error('Error fetching batch:', error);
     return res.status(500).json({ error: 'Failed to fetch batch information' });
@@ -63,7 +64,7 @@ app.get('/batches/:batchId', async (req, res) => {
 // Download completed messages as JSONL
 app.get('/batches/:batchId/messages', async (req, res) => {
   try {
-    const { batchId } = getBatchParamsValidator.parse(req.params);
+    const { batchId } = validators.batchIdParamsValidator.parse(req.params);
 
     const batch = await dao.getBatchById(batchId);
 
@@ -73,7 +74,7 @@ app.get('/batches/:batchId/messages', async (req, res) => {
 
     const llmRequests = await dao.getLlmRequestsByBatchId(batchId);
 
-    const jsonlContent = toBatchResultsFileString(llmRequests);
+    const jsonlContent = dtos.toBatchResultsFileString(llmRequests);
 
     res.setHeader('Content-Type', 'application/x-ndjson');
     res.setHeader('Content-Disposition', `attachment; filename="batch-${batchId}-messages.jsonl"`);

@@ -11,7 +11,7 @@ interface SubjectIdentifiers {
   shardId: string;
 }
 
-export const createBatch = async (totalShards: number): Promise<Batch> => {
+export const createBatch = async ({ totalShards }: { totalShards: number }): Promise<Batch> => {
   const [batch] = await dbClient.db.insert(Batch).values({ totalShards }).returning();
   return batch;
 };

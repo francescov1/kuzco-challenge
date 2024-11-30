@@ -1,7 +1,7 @@
 import * as llmClient from '../clients/llm';
 import { dao } from '../db';
 import { NatsClient } from '../clients/nats';
-import { sendCompletionWebhook } from '../clients/webhook';
+import { sendCompletionWebhook } from '../clients/webhooks';
 
 const natsClient = new NatsClient();
 

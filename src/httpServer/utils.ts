@@ -21,3 +21,11 @@ export const shardLlmRequests = (llmRequests: LlmRequestType[]): ShardIdToLlmReq
 
   return shardIdToLlmRequestsMap;
 };
+
+export const parseJsonlBatchFile = (fileBuffer: Buffer): Record<string, unknown>[] => {
+  const fileContent = fileBuffer.toString('utf-8');
+  return fileContent
+    .split('\n')
+    .filter((line) => line.trim())
+    .map((line) => JSON.parse(line) as Record<string, unknown>);
+};
