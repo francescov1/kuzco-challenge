@@ -1,5 +1,5 @@
 import { SHARD_SIZE } from '../clients/nats/constants';
-import { LlmRequestType } from '../clients/llm/types';
+import { LlmRequestType } from '../types';
 
 interface ShardIdToLlmRequestsMap {
   [shardId: string]: LlmRequestType[];

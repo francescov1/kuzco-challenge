@@ -74,11 +74,9 @@ app.get('/batches/:batchId/messages', async (req, res) => {
 
     const llmRequests = await dao.getLlmRequestsByBatchId(batchId);
 
-    const jsonlContent = dtos.toBatchResultsFileString(llmRequests);
-
     res.setHeader('Content-Type', 'application/x-ndjson');
     res.setHeader('Content-Disposition', `attachment; filename="batch-${batchId}-messages.jsonl"`);
-    return res.send(jsonlContent);
+    return res.send(dtos.toBatchResultsJsonlString(llmRequests));
   } catch (error) {
     console.error('Error fetching messages:', error);
     return res.status(500).json({ error: 'Failed to fetch messages' });

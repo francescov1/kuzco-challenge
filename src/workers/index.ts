@@ -1,7 +1,5 @@
-import * as llmClient from '../clients/llm';
 import { dao } from '../db';
-import { NatsClient } from '../clients/nats';
-import { sendCompletionWebhook } from '../clients/webhooks';
+import { NatsClient, webhooksClient, llmClient } from '../clients';
 
 const natsClient = new NatsClient();
 
@@ -16,15 +14,16 @@ async function runResultsConsumer(): Promise<void> {
   await natsClient.consumeResultsMessages(async (data, { batchId, shardId }) => {
     const { completedLlmRequests } = data;
 
-    const updatedBatch = await dao.saveCompletedLlmRequests(completedLlmRequests, {
+    const updatedBatch = await dao.saveCompletedLlmRequests({
       batchId,
-      shardId
+      shardId,
+      completedLlmRequests
     });
 
     if (updatedBatch.completedAt) {
       console.log(`Batch ${batchId} completed at ${updatedBatch.completedAt.toDateString()}`);
 
-      await sendCompletionWebhook(updatedBatch);
+      await webhooksClient.sendCompletionWebhook(updatedBatch);
     }
   });
 }

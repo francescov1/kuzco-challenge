@@ -1,4 +1,4 @@
-import { CompletedLlmRequests, LlmRequestType } from '../llm/types';
+import { CompletedLlmRequests, LlmRequestType } from '../../types';
 
 export interface SubjectIdentifiers {
   batchId: number;

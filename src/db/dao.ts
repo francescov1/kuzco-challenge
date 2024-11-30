@@ -1,15 +1,9 @@
 import { eq, sql } from 'drizzle-orm';
 
-import { CompletedLlmRequests } from '../clients/llm/types';
+import { CompletedLlmRequests } from '../types';
 import { dbClient } from './client';
 import { Batch } from './models/batch';
 import { LlmRequest, STATUS } from './models/llmRequest';
-
-// TODO: Split these out to a common type
-interface SubjectIdentifiers {
-  batchId: number;
-  shardId: string;
-}
 
 export const createBatch = async ({ totalShards }: { totalShards: number }): Promise<Batch> => {
   const [batch] = await dbClient.db.insert(Batch).values({ totalShards }).returning();
@@ -35,13 +29,18 @@ export const getLlmRequestsByBatchId = async (batchId: number): Promise<LlmReque
   return llmRequests;
 };
 
-export const saveCompletedLlmRequests = async (
-  completedLlmRequests: CompletedLlmRequests[],
-  subjectIdentifiers: SubjectIdentifiers
-): Promise<Batch> => {
+export const saveCompletedLlmRequests = async ({
+  batchId,
+  shardId,
+  completedLlmRequests
+}: {
+  batchId: number;
+  shardId: string;
+  completedLlmRequests: CompletedLlmRequests[];
+}): Promise<Batch> => {
   const requestInserts = completedLlmRequests.map((response) => ({
-    batchId: subjectIdentifiers.batchId,
-    shardId: subjectIdentifiers.shardId,
+    batchId,
+    shardId,
     messages: response.messages,
     model: response.model,
     status: response.error ? STATUS.ERROR : STATUS.SUCCESS,
@@ -63,7 +62,7 @@ export const saveCompletedLlmRequests = async (
         completedShards: sql`completed_shards + 1`,
         completedAt: sql`CASE WHEN completed_shards + 1 = total_shards THEN NOW() ELSE completed_at END`
       })
-      .where(eq(Batch.id, subjectIdentifiers.batchId))
+      .where(eq(Batch.id, batchId))
       .returning();
 
     [updatedBatch] = results;
