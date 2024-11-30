@@ -2,8 +2,8 @@ import { LlmResponseRecord, BatchRecord } from '../db/models';
 
 export interface BatchDto {
   id: number;
-  totalShards: number;
-  completedShards: number;
+  totalShardsCount: number;
+  completedShardsCount: number;
   createdAt: Date;
   completionWebhookUrl: string | null;
   completedAt: Date | null;
@@ -12,8 +12,8 @@ export interface BatchDto {
 
 export const toBatchDto = (batch: BatchRecord): BatchDto => ({
   id: batch.id,
-  totalShards: batch.totalShards,
-  completedShards: batch.completedShards,
+  totalShardsCount: batch.totalShardsCount,
+  completedShardsCount: batch.completedShardsCount,
   createdAt: batch.createdAt,
   completionWebhookUrl: batch.completionWebhookUrl,
   completedAt: batch.completedAt,
@@ -26,6 +26,7 @@ export const toBatchResultsJsonlString = (llmResponseRecords: LlmResponseRecord[
       JSON.stringify({
         messages: llmResponseRecord.messages,
         model: llmResponseRecord.model,
+        shardId: llmResponseRecord.shardId,
         status: llmResponseRecord.status,
         error: llmResponseRecord.error
       })

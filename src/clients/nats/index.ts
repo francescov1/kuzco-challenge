@@ -95,10 +95,10 @@ export class NatsClient {
 
     for await (const message of messages) {
       try {
+        console.log(`Worker consumer received message ${message.subject}`);
+
         const data: WorkerMessageData = message.json();
         const subjectIdentifiers = parseSubject(message.subject);
-
-        console.log(`Worker consumer received message ${message.subject}`);
 
         await handler(data, subjectIdentifiers);
 
@@ -123,21 +123,20 @@ export class NatsClient {
     );
     const messages = await consumer.consume();
 
-    console.log('Results worker is listening...');
+    console.log('Results consumer is listening...');
 
     for await (const message of messages) {
       try {
+        console.log(`Results consumer received message ${message.subject}`);
+
         const data: ResultsMessageData = message.json();
         const subjectIdentifiers = parseSubject(message.subject);
 
-        console.log(`Results consumer received message ${message.subject}`);
-
         await handler(data, subjectIdentifiers);
 
-        // TODO: test time out of this, if it times out, the message will be redelivered
         await message.ackAck();
       } catch (err) {
-        console.error('Results worker error:', err);
+        console.error('Results consumer error:', err);
         message.nak();
       }
     }

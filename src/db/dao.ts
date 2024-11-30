@@ -4,11 +4,11 @@ import { dbClient } from './client';
 import { LlmResponseRecord, BatchRecord, STATUS } from './models';
 
 export const createBatch = async ({
-  totalShards
+  totalShardsCount
 }: {
-  totalShards: number;
+  totalShardsCount: number;
 }): Promise<BatchRecord> => {
-  const [batch] = await dbClient.db.insert(BatchRecord).values({ totalShards }).returning();
+  const [batch] = await dbClient.db.insert(BatchRecord).values({ totalShardsCount }).returning();
   return batch;
 };
 
@@ -65,8 +65,8 @@ export const saveLlmResponses = async ({
     const results = await tx
       .update(BatchRecord)
       .set({
-        completedShards: sql`completed_shards + 1`,
-        completedAt: sql`CASE WHEN completed_shards + 1 = total_shards THEN NOW() ELSE completed_at END`
+        completedShardsCount: sql`completed_shards_count + 1`,
+        completedAt: sql`CASE WHEN completed_shards_count + 1 = total_shards_count THEN NOW() ELSE completed_at END`
       })
       .where(eq(BatchRecord.id, batchId))
       .returning();

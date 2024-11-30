@@ -1,5 +1,5 @@
 {
-  "id": "8487b5c5-7361-4650-92f6-f76ed50cde0f",
+  "id": "4fed8b5a-9d4b-4b3a-a680-1ab19a97ceda",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -103,14 +103,14 @@
           "primaryKey": true,
           "notNull": true
         },
-        "total_shards": {
-          "name": "total_shards",
+        "total_shards_count": {
+          "name": "total_shards_count",
           "type": "integer",
           "primaryKey": false,
           "notNull": true
         },
-        "completed_shards": {
-          "name": "completed_shards",
+        "completed_shards_count": {
+          "name": "completed_shards_count",
           "type": "integer",
           "primaryKey": false,
           "notNull": true,

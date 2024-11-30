@@ -11,8 +11,8 @@ export const sendCompletionWebhook = async (batch: BatchRecord) => {
       id: batch.id,
       createdAt: batch.createdAt,
       completedAt: batch.completedAt,
-      totalShards: batch.totalShards,
-      completedShards: batch.completedShards
+      totalShardsCount: batch.totalShardsCount,
+      completedShardsCount: batch.completedShardsCount
     })
   });
 

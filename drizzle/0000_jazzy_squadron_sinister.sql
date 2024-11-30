@@ -12,8 +12,8 @@ CREATE TABLE IF NOT EXISTS "llm_response_records" (
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "batches" (
 	"id" serial PRIMARY KEY NOT NULL,
-	"total_shards" integer NOT NULL,
-	"completed_shards" integer DEFAULT 0 NOT NULL,
+	"total_shards_count" integer NOT NULL,
+	"completed_shards_count" integer DEFAULT 0 NOT NULL,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"completion_webhook_url" text,
 	"completed_at" timestamp
