@@ -48,13 +48,15 @@ export const saveCompletedLlmRequests = async (
     error: response.error || null
   }));
 
-  // We can assume this will be set, since the following transaction will either set it successfully or throw an error.
+  // We can assume this will be set below, since the following transaction will either set it successfully or throw an error.
   let updatedBatch!: Batch;
 
   // Run a transaction to save the llm requests and update the batch
   await dbClient.db.transaction(async (tx) => {
+    // Insert all new requests
     await tx.insert(LlmRequest).values(requestInserts);
 
+    // Update the batch with new completed number of shards and completion time if this is the last shard
     const results = await tx
       .update(Batch)
       .set({

@@ -2,14 +2,15 @@ TODOs remaining in order:
 
 - move all to docker repo, bun
 - setup easy startup scripts, everything init easily.
+- test one req/shard, ensure this model can handle any number of requests/shards
 - considerations:
   - think about storing intermediate results in NATS instead of DB, since we should consider them ephemeral until full batch is done
   - think about handling 50M requests
   - ensure at most once
   - call out any lacks of efficiency in the code
 - documentation
-- unit tests
 - cleanup any remaining todos in code
+- review docs see if anything missed https://docs.nats.io/using-nats/developer/develop_jetstream/model_deep_dive#exactly-once-semantics
 - think about validation llm requests cryptography
 
 Opportunities to discuss in docs:
