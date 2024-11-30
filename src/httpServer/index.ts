@@ -26,8 +26,8 @@ app.post('/batches', upload.single('file'), async (req, res) => {
     const shardIdToLlmRequestsMap = utils.shardLlmRequests(llmRequests);
 
     const totalShardsCount = Object.keys(shardIdToLlmRequestsMap).length;
-
-    const newBatch = await dao.createBatch({ totalShardsCount });
+    const totalLlmRequestsCount = llmRequests.length;
+    const newBatch = await dao.createBatch({ totalShardsCount, totalLlmRequestsCount });
 
     await Bluebird.map(
       Object.entries(shardIdToLlmRequestsMap),

@@ -4,11 +4,16 @@ import { dbClient } from './client';
 import { LlmResponseRecord, BatchRecord, STATUS } from './models';
 
 export const createBatch = async ({
-  totalShardsCount
+  totalShardsCount,
+  totalLlmRequestsCount
 }: {
   totalShardsCount: number;
+  totalLlmRequestsCount: number;
 }): Promise<BatchRecord> => {
-  const [batch] = await dbClient.db.insert(BatchRecord).values({ totalShardsCount }).returning();
+  const [batch] = await dbClient.db
+    .insert(BatchRecord)
+    .values({ totalShardsCount, totalLlmRequestsCount })
+    .returning();
   return batch;
 };
 

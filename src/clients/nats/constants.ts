@@ -12,4 +12,4 @@ export const RESULTS_MAX_DELIVERIES = 3;
 
 export const NATS_SERVER_URL = 'localhost:4222';
 
-export const SHARD_SIZE = 3;
+export const SHARD_SIZE = 2;

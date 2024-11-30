@@ -1,5 +1,5 @@
 {
-  "id": "4fed8b5a-9d4b-4b3a-a680-1ab19a97ceda",
+  "id": "bb3e6729-58c3-4a54-b301-d058c1102809",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -115,6 +115,12 @@
           "primaryKey": false,
           "notNull": true,
           "default": 0
+        },
+        "total_llm_requests_count": {
+          "name": "total_llm_requests_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
         },
         "created_at": {
           "name": "created_at",

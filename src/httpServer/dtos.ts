@@ -4,6 +4,7 @@ export interface BatchDto {
   id: number;
   totalShardsCount: number;
   completedShardsCount: number;
+  totalLlmRequestsCount: number;
   createdAt: Date;
   completionWebhookUrl: string | null;
   completedAt: Date | null;
@@ -14,6 +15,7 @@ export const toBatchDto = (batch: BatchRecord): BatchDto => ({
   id: batch.id,
   totalShardsCount: batch.totalShardsCount,
   completedShardsCount: batch.completedShardsCount,
+  totalLlmRequestsCount: batch.totalLlmRequestsCount,
   createdAt: batch.createdAt,
   completionWebhookUrl: batch.completionWebhookUrl,
   completedAt: batch.completedAt,
