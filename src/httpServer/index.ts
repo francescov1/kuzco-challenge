@@ -72,11 +72,11 @@ app.get('/batches/:batchId/messages', async (req, res) => {
       return res.status(400).json({ error: 'Cannot download messages: batch is not completed' });
     }
 
-    const llmRequests = await dao.getLlmRequestsByBatchId(batchId);
+    const llmResponseRecords = await dao.getLlmResponsesByBatchId(batchId);
 
     res.setHeader('Content-Type', 'application/x-ndjson');
     res.setHeader('Content-Disposition', `attachment; filename="batch-${batchId}-messages.jsonl"`);
-    return res.send(dtos.toBatchResultsJsonlString(llmRequests));
+    return res.send(dtos.toBatchResultsJsonlString(llmResponseRecords));
   } catch (error) {
     console.error('Error fetching messages:', error);
     return res.status(500).json({ error: 'Failed to fetch messages' });

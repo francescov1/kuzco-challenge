@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import { Batch, LlmRequest } from './models';
+import { BatchRecord, LlmResponseRecord } from './models';
 
 export class DatabaseClient {
   public db: ReturnType<typeof drizzle>;
@@ -17,7 +17,7 @@ export class DatabaseClient {
       ssl: false
     });
 
-    this.db = drizzle(this.pool, { schema: { LlmRequest, Batch } });
+    this.db = drizzle(this.pool, { schema: { LlmResponseRecord, BatchRecord } });
   }
 
   public async close(): Promise<void> {

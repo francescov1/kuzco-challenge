@@ -1,4 +1,4 @@
-import { CompletedLlmRequests, LlmRequestType } from '../../types';
+import { LlmResponse, LlmRequest } from '../../types';
 
 export interface SubjectIdentifiers {
   batchId: number;
@@ -6,9 +6,9 @@ export interface SubjectIdentifiers {
 }
 
 export interface WorkerMessageData {
-  llmRequests: LlmRequestType[];
+  llmRequests: LlmRequest[];
 }
 
 export interface ResultsMessageData {
-  completedLlmRequests: CompletedLlmRequests[];
+  llmResponses: LlmResponse[];
 }

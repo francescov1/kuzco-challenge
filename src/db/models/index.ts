@@ -1,2 +1,2 @@
-export * from './llmRequest';
+export * from './llmResponse';
 export * from './batch';

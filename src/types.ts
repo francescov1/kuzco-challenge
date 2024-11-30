@@ -3,15 +3,12 @@ interface Message {
   role: 'system' | 'user' | 'assistant';
 }
 
-// TODO: Probably wanna move these to a common type
-
-// TODO: Better name
-export interface LlmRequestType {
+export interface LlmRequest {
   model: string;
   messages: Message[];
 }
 
-export interface CompletedLlmRequests extends LlmRequestType {
+export interface LlmResponse extends LlmRequest {
   status: 'success' | 'error';
   error: string | null;
 }

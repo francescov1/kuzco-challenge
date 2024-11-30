@@ -1,11 +1,11 @@
 {
-  "id": "54225cec-5b6d-41d6-8146-e4f2de6fbcc1",
+  "id": "8487b5c5-7361-4650-92f6-f76ed50cde0f",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.llm_requests": {
-      "name": "llm_requests",
+    "public.llm_response_records": {
+      "name": "llm_response_records",
       "schema": "",
       "columns": {
         "id": {
@@ -77,16 +77,12 @@
         }
       },
       "foreignKeys": {
-        "llm_requests_batch_id_batches_id_fk": {
-          "name": "llm_requests_batch_id_batches_id_fk",
-          "tableFrom": "llm_requests",
+        "llm_response_records_batch_id_batches_id_fk": {
+          "name": "llm_response_records_batch_id_batches_id_fk",
+          "tableFrom": "llm_response_records",
           "tableTo": "batches",
-          "columnsFrom": [
-            "batch_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["batch_id"],
+          "columnsTo": ["id"],
           "onDelete": "no action",
           "onUpdate": "no action"
         }
@@ -153,10 +149,7 @@
     "public.status": {
       "name": "status",
       "schema": "public",
-      "values": [
-        "success",
-        "error"
-      ]
+      "values": ["success", "error"]
     }
   },
   "schemas": {},

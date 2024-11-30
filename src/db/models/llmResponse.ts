@@ -8,7 +8,7 @@ import {
   pgTable,
   integer
 } from 'drizzle-orm/pg-core';
-import { Batch } from './batch';
+import { BatchRecord } from './batch';
 
 export const STATUS = {
   SUCCESS: 'success' as const,
@@ -17,12 +17,12 @@ export const STATUS = {
 
 export const statusEnum = pgEnum('status', [STATUS.SUCCESS, STATUS.ERROR]);
 
-export const LlmRequest = pgTable(
-  'llm_requests',
+export const LlmResponseRecord = pgTable(
+  'llm_response_records',
   {
     id: serial('id').primaryKey(),
     batchId: integer('batch_id')
-      .references(() => Batch.id)
+      .references(() => BatchRecord.id)
       .notNull(),
     shardId: text('shard_id').notNull(),
     messages: jsonb('messages')
@@ -36,5 +36,5 @@ export const LlmRequest = pgTable(
   (table) => [index('batch_id_idx').on(table.batchId)]
 );
 
-export type LlmRequest = typeof LlmRequest.$inferSelect;
-export type NewLlmRequest = typeof LlmRequest.$inferInsert;
+export type LlmResponseRecord = typeof LlmResponseRecord.$inferSelect;
+export type NewLlmResponseRecord = typeof LlmResponseRecord.$inferInsert;

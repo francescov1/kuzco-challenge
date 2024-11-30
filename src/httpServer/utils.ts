@@ -1,12 +1,12 @@
 import { SHARD_SIZE } from '../clients/nats/constants';
-import { LlmRequestType } from '../types';
+import { LlmRequest } from '../types';
 
 interface ShardIdToLlmRequestsMap {
-  [shardId: string]: LlmRequestType[];
+  [shardId: string]: LlmRequest[];
 }
 
 /* eslint-disable no-param-reassign */
-export const shardLlmRequests = (llmRequests: LlmRequestType[]): ShardIdToLlmRequestsMap => {
+export const shardLlmRequests = (llmRequests: LlmRequest[]): ShardIdToLlmRequestsMap => {
   const shardIdToLlmRequestsMap = llmRequests.reduce(
     (shards: ShardIdToLlmRequestsMap, request, index) => {
       const shardId = `shard_${Math.floor(index / SHARD_SIZE)}`;

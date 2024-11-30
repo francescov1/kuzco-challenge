@@ -5,23 +5,23 @@ const natsClient = new NatsClient();
 
 async function runWorkerConsumer(): Promise<void> {
   await natsClient.consumeWorkerMessages(async (data, subjectIdentifiers) => {
-    const completedLlmRequests = await llmClient.processRequests(data.llmRequests);
-    await natsClient.publishResultsMessage(subjectIdentifiers, { completedLlmRequests });
+    const llmResponses = await llmClient.processRequests(data.llmRequests);
+    await natsClient.publishResultsMessage(subjectIdentifiers, { llmResponses });
   });
 }
 
 async function runResultsConsumer(): Promise<void> {
   await natsClient.consumeResultsMessages(async (data, { batchId, shardId }) => {
-    const { completedLlmRequests } = data;
+    const { llmResponses } = data;
 
-    const updatedBatch = await dao.saveCompletedLlmRequests({
+    const updatedBatch = await dao.saveLlmResponses({
       batchId,
       shardId,
-      completedLlmRequests
+      llmResponses
     });
 
     if (updatedBatch.completedAt) {
-      console.log(`Batch ${batchId} completed at ${updatedBatch.completedAt.toDateString()}`);
+      console.log(`BatchRecord ${batchId} completed at ${updatedBatch.completedAt.toDateString()}`);
 
       await webhooksClient.sendCompletionWebhook(updatedBatch);
     }

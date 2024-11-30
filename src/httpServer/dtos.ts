@@ -1,4 +1,4 @@
-import { LlmRequest, Batch } from '../db/models';
+import { LlmResponseRecord, BatchRecord } from '../db/models';
 
 export interface BatchDto {
   id: number;
@@ -10,7 +10,7 @@ export interface BatchDto {
   status: 'completed' | 'pending';
 }
 
-export const toBatchDto = (batch: Batch): BatchDto => ({
+export const toBatchDto = (batch: BatchRecord): BatchDto => ({
   id: batch.id,
   totalShards: batch.totalShards,
   completedShards: batch.completedShards,
@@ -20,14 +20,14 @@ export const toBatchDto = (batch: Batch): BatchDto => ({
   status: batch.completedAt ? 'completed' : 'pending'
 });
 
-export const toBatchResultsJsonlString = (llmRequests: LlmRequest[]): string =>
-  llmRequests
-    .map((llmRequest) =>
+export const toBatchResultsJsonlString = (llmResponseRecords: LlmResponseRecord[]): string =>
+  llmResponseRecords
+    .map((llmResponseRecord) =>
       JSON.stringify({
-        messages: llmRequest.messages,
-        model: llmRequest.model,
-        status: llmRequest.status,
-        error: llmRequest.error
+        messages: llmResponseRecord.messages,
+        model: llmResponseRecord.model,
+        status: llmResponseRecord.status,
+        error: llmResponseRecord.error
       })
     )
     .join('\n');

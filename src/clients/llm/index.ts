@@ -1,7 +1,7 @@
 import { TEST_ERROR_PROMPT } from './constants';
-import { CompletedLlmRequests, LlmRequestType } from '../../types';
+import { LlmResponse, LlmRequest } from '../../types';
 
-const processRequest = (request: LlmRequestType): CompletedLlmRequests => {
+const processRequest = (request: LlmRequest): LlmResponse => {
   try {
     // NOTE: I'm assuming the last message in the array is the user message.
     // Since this is just a dummy function I assume this is fine.
@@ -34,6 +34,5 @@ const processRequest = (request: LlmRequestType): CompletedLlmRequests => {
   }
 };
 
-export const processRequests = async (
-  llmRequests: LlmRequestType[]
-): Promise<CompletedLlmRequests[]> => Promise.all(llmRequests.map(processRequest));
+export const processRequests = async (llmRequests: LlmRequest[]): Promise<LlmResponse[]> =>
+  Promise.all(llmRequests.map(processRequest));

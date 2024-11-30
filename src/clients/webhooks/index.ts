@@ -1,6 +1,6 @@
-import { Batch } from '../../db/models';
+import { BatchRecord } from '../../db/models';
 
-export const sendCompletionWebhook = async (batch: Batch) => {
+export const sendCompletionWebhook = async (batch: BatchRecord) => {
   if (!batch.completionWebhookUrl) {
     return;
   }
