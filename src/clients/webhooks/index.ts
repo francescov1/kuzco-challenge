@@ -1,4 +1,4 @@
-import { BatchRecord } from '../../db/models';
+import { BatchRecord } from '../../dao/models';
 
 export const sendCompletionWebhook = async (batch: BatchRecord) => {
   if (!batch.completionWebhookUrl) {
@@ -9,11 +9,11 @@ export const sendCompletionWebhook = async (batch: BatchRecord) => {
     method: 'POST',
     body: JSON.stringify({
       id: batch.id,
-      createdAt: batch.createdAt,
-      completedAt: batch.completedAt,
       totalShardsCount: batch.totalShardsCount,
       completedShardsCount: batch.completedShardsCount,
-      totalLlmRequestsCount: batch.totalLlmRequestsCount
+      totalLlmRequestsCount: batch.totalLlmRequestsCount,
+      createdAt: batch.createdAt,
+      completedAt: batch.completedAt
     })
   });
 

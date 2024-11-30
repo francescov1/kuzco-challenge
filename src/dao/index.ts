@@ -1,6 +1,6 @@
 import { eq, sql } from 'drizzle-orm';
 import { LlmResponse } from '../types';
-import { dbClient } from './client';
+import { dbClient } from '../clients/db';
 import { LlmResponseRecord, BatchRecord, STATUS } from './models';
 
 export const createBatch = async ({

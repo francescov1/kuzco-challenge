@@ -1,4 +1,4 @@
-import { LlmResponseRecord, BatchRecord } from '../db/models';
+import { LlmResponseRecord, BatchRecord } from '../dao/models';
 
 export interface BatchDto {
   id: number;

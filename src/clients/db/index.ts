@@ -1,6 +1,6 @@
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import { BatchRecord, LlmResponseRecord } from './models';
+import { BatchRecord, LlmResponseRecord } from '../../dao/models';
 
 export class DatabaseClient {
   public db: ReturnType<typeof drizzle>;

@@ -5,7 +5,7 @@ import * as validators from './validators';
 import * as dtos from './dtos';
 import * as utils from './utils';
 import { NatsClient } from '../clients';
-import { dao } from '../db';
+import * as dao from '../dao';
 
 const natsClient = new NatsClient();
 

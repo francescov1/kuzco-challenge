@@ -1,4 +1,4 @@
-import { dao } from '../db';
+import * as dao from '../dao';
 import { NatsClient, webhooksClient, llmClient } from '../clients';
 
 const natsClient = new NatsClient();
@@ -21,9 +21,9 @@ async function runResultsConsumer(): Promise<void> {
     });
 
     if (updatedBatch.completedAt) {
-      console.log(`BatchRecord ${batchId} completed at ${updatedBatch.completedAt.toDateString()}`);
-
       await webhooksClient.sendCompletionWebhook(updatedBatch);
+
+      console.log(`BatchRecord ${batchId} completed at ${updatedBatch.completedAt.toDateString()}`);
     }
   });
 }
