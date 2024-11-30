@@ -4,7 +4,8 @@ import {
   DeliverPolicy,
   JetStreamClient,
   JetStreamManager,
-  NatsConnection
+  NatsConnection,
+  ReplayPolicy
 } from 'nats';
 import {
   NATS_SERVER_URL,
@@ -54,6 +55,7 @@ export class NatsClient {
     await this.jetstreamManager.consumers.add(WORKER_STREAM_NAME, {
       durable_name: WORKER_CONSUMER_NAME,
       deliver_policy: DeliverPolicy.New,
+      replay_policy: ReplayPolicy.Instant,
       ack_policy: AckPolicy.Explicit,
       ack_wait: WORKER_TIMEOUT_SECONDS * 1000 * 1000 * 1000,
       max_deliver: WORKER_MAX_DELIVERIES
@@ -67,6 +69,7 @@ export class NatsClient {
     await this.jetstreamManager.consumers.add(RESULTS_STREAM_NAME, {
       durable_name: RESULTS_CONSUMER_NAME,
       deliver_policy: DeliverPolicy.New,
+      replay_policy: ReplayPolicy.Instant,
       ack_policy: AckPolicy.Explicit,
       ack_wait: RESULTS_TIMEOUT_SECONDS * 1000 * 1000 * 1000,
       max_deliver: RESULTS_MAX_DELIVERIES
@@ -148,7 +151,6 @@ export class NatsClient {
     const subject = toResultsSubject(subjectIdentifiers);
 
     await this.jetstreamClient.publish(subject, encodeJson(data), {
-      // TODO: Is there a better message id to use for deduplication?
       msgID: subject
     });
 
@@ -163,7 +165,6 @@ export class NatsClient {
     const subject = toWorkerSubject(subjectIdentifiers);
 
     await this.jetstreamClient.publish(subject, encodeJson(data), {
-      // TODO: Is there a better message id to use for deduplication?
       msgID: subject
     });
 
