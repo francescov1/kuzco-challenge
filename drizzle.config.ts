@@ -5,10 +5,10 @@ export default defineConfig({
   schema: ['./src/db/models/index.ts'],
   dbCredentials: {
     user: 'postgres',
-    password: 'postgres',
+    password: 'password',
     host: 'localhost',
     port: 5432,
-    database: 'main',
+    database: 'postgres',
     ssl: false
   }
 });

@@ -12,8 +12,8 @@ export class DatabaseClient {
       host: 'localhost',
       port: 5432,
       user: 'postgres',
-      password: 'postgres',
-      database: 'main',
+      password: 'password',
+      database: 'postgres',
       ssl: false
     });
 
