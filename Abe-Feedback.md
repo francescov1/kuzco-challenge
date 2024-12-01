@@ -1,4 +1,15 @@
-## Francesco Take Home Feedback
+<h1>Francesco Take Home Feedback</h1>
+
+<!-- table of contents -->
+
+- [Open Questions](#open-questions)
+- [Concerns](#concerns)
+  - [Non-atomicity of shard status updates](#non-atomicity-of-shard-status-updates)
+
+### Open Questions
+
+- Why did you introduce the concept of shards? I thought they were 1-1 with inferences, but it doesn't look like it.
+- Have you considered doing some math on request sizes and batch sizes to recommend good size limits for batches, etc? That's not something I specifically asked for, but would be very good information to understand how this will scale in NATS and Postgres.
 
 ### Concerns
 
